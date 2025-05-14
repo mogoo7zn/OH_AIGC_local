@@ -1,5 +1,6 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import testNapi from 'libentry.so';
+import aki from 'libentry.so'
 
 const DOMAIN = 0x0000;
 
@@ -12,11 +13,10 @@ struct Index {
     Row() {
       Column() {
         Text(this.message)
-          .fontSize($r('app.float.page_text_font_size'))
+          .fontSize(50)
           .fontWeight(FontWeight.Bold)
           .onClick(() => {
-            this.message = 'Welcome';
-            hilog.info(DOMAIN, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
+            console.info(aki.SayHello("hello world")); // 调用.so文件中的代码接口
           })
       }
       .width('100%')
