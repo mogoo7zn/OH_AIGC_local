@@ -1,16 +1,15 @@
-// 导入UUID生成库
-import { generateUUID } from '@ohos.util'
-import { Message } from '../model/Message'
+import util from '@ohos.util';
 
 export class Conversation {
-  id: string = generateUUID()  // 使用标准库方法
-  title: string = ''
-  messages: Array<Message> = []  // 导入Message类
-  date: string = new Date().toLocaleString()
+  id: string = '';
+  title: string = '';
+  messages: Array<string> = [];
+  lastMessageTime: Date = new Date();
 
-  constructor(initMsg?: string) {
-    if (initMsg) {
-      this.title = initMsg.substring(0, 20) + '...'  // 自动生成标题
-    }
+  constructor() {
+    this.id = util.generateRandomUUID();
+    this.title = "新对话";
+    this.messages = [];
+    this.lastMessageTime = new Date();
   }
 }

@@ -1,26 +1,29 @@
-import { Conversation } from '../model/Conversation'
+import { Conversation } from '../model/Conversation';
 
-@ComponentV2
-struct HistorySidebar {
-  @Require @Param conversations: Array<Conversation> = []
-  @Require @Param onSelect: (id: string) => void = () => {}
+@Component
+export struct HistorySidebar {
+  @Prop conversations: Array<Conversation> = [];
+  onSelect: (id: string) => void = () => {};
 
   build() {
-    List() {
-      ForEach(this.conversations, (conv) => {
-        ListItem() {
-          Row() {
-            Text(conv.title)
+    Column() {
+      Text('历史对话').fontSize(20).margin(10)
+      List() {
+        ForEach(this.conversations, (item: Conversation) => {
+          ListItem() {
+            Text(item.title)
               .fontSize(16)
-              .maxLines(1)
-            Text(conv.date)
-              .fontColor('#666')
+              .padding(10)
+              .width('100%')
+              .onClick(() => {
+                this.onSelect(item.id);
+              })
           }
-          .onClick(() => this.onSelect(conv.id))
-        }
-      })
+        }, (item: Conversation) => item.id)
+      }
+      .width('100%')
     }
-    .width('100%')  // 明确宽高
+    .width('100%')
     .height('100%')
   }
 }
