@@ -2,10 +2,13 @@ import { Message } from '../model/Message';
 import { StorageUtil } from '../utils/StorageUtil';
 import { mindsporeUtil } from '../utils/MindsporeUtil';
 
-// Define an interface for mindsporeUtil
+import { mindSporeLite } from '@kit.MindSporeLiteKit'
+
 interface MindsporeUtil {
   inference(text: string): Promise<string>;
 }
+
+
 
 // Add the ChatBubble component definition
 @Component

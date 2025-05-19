@@ -2,10 +2,11 @@
   "module": {
     "name": "entry",
     "type": "entry",
-    "description": "$string:module_desc",
+    "description": "MNN inference for HarmonyOS",
     "mainElement": "EntryAbility",
     "deviceTypes": [
-      "phone"
+      "default",
+      "tablet"
     ],
     "deliveryWithInstall": true,
     "installationFree": false,
@@ -14,22 +15,28 @@
       {
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
-        "description": "$string:EntryAbility_desc",
+        "description": "Main entry ability",
         "icon": "$media:layered_image",
         "label": "$string:EntryAbility_label",
-        "startWindowIcon": "$media:startIcon",
+        "startWindowIcon": "$media:layered_image",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [
           {
-            "entities": [
-              "entity.system.home"
-            ],
-            "actions": [
-              "action.system.home"
-            ]
+            "entities": ["entity.system.home"],
+            "actions": ["action.system.home"]
           }
         ]
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.READ_MEDIA",
+        "reason": "$string:media_permission",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "always"
+        }
       }
     ]
   }

@@ -2,15 +2,23 @@
 #include <aki/jsbind.h>
 #include <string> 
 
-// 1、用户自定义业务 
-std::string SayHello(std::string msg){  return msg + " too.";}  
+// 用户自定义业务函数 
+std::string SayHello(std::string msg) {  
+  return msg + " too.";
+}  
+
+// 添加一个新的Add函数示例
+int Add(int a, int b) {
+  return a + b;
+}
  
-// 2、导出业务接口 
-// Step 1 注册 AKI 插件 
-JSBIND_ADDON(entry) // 注册 AKI 插件名: 即为编译*.so名称，规则与Node-API一致 
+// 导出业务接口 
+// 注册 AKI 插件 
+JSBIND_ADDON(entry) // 注册 AKI 插件名: 即为编译*.so名称
  
-// Step 2 注册 FFI 特性 
+// 注册 FFI 特性 
 JSBIND_GLOBAL() 
 { 
-  JSBIND_FUNCTION(SayHello); 
+  JSBIND_FUNCTION(SayHello, "SayHello"); 
+  JSBIND_FUNCTION(Add, "Add");  // 导出Add函数
 }

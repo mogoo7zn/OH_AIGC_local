@@ -1,0 +1,6 @@
+{
+  "name": "libmnn_wrapper.so",
+  "types": "./MnnWrapper.d.ts",
+  "version": "1.0.0",
+  "description": "TypeScript definitions for MNN wrapper functions"
+}
