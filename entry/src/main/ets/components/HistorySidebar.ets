@@ -7,7 +7,7 @@ export struct HistorySidebar {
 
   build() {
     Column() {
-      Text('历史对话').fontSize(20).margin(10)
+      Text('历史对话').fontSize(20).margin(10).fontWeight(FontWeight.Bold)
       List() {
         ForEach(this.conversations, (item: Conversation) => {
           ListItem() {
@@ -22,6 +22,12 @@ export struct HistorySidebar {
         }, (item: Conversation) => item.id)
       }
       .width('100%')
+      .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.None)
+      .divider({
+        strokeWidth: 10,
+        color: 0x08000000,
+      })
     }
     .width('100%')
     .height('100%')
