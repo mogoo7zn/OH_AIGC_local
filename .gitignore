@@ -1,5 +1,6 @@
 /node_modules
-/oh_modules
+/oh_modules/.ohpm
+/oh_modules/@ohos
 /local.properties
 /.idea
 **/build
@@ -10,3 +11,5 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
+./build-profile.json5
+/third_party

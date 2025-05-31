@@ -1,0 +1,23 @@
+{
+	"app": {
+		"bundleName": "tech.changwei.chatui",
+		"debug": true,
+		"versionCode": 1000000,
+		"versionName": "1.0.0",
+		"minAPIVersion": 40100011,
+		"targetAPIVersion": 40100011,
+		"apiReleaseType": "Release",
+		"compileSdkVersion": "4.1.0.71",
+		"compileSdkType": "HarmonyOS",
+		"bundleType": "app"
+	},
+	"module": {
+		"name": "chatui",
+		"type": "har",
+		"deviceTypes": [
+			"default",
+			"tablet"
+		],
+		"installationFree": false
+	}
+}

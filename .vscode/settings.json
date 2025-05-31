@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "memory": "cpp",
+    "condition_variable": "cpp",
+    "filesystem": "cpp"
+  }
+}

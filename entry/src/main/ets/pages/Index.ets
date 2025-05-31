@@ -3,6 +3,8 @@ import { ChatController } from '@changwei/chatui'
 import router from '@ohos.router';
 import { SidebarComponent } from '../component/HistorySideBar'
 import display from '@ohos.display';
+import App from '@system.app';
+
 const displayClass = display.getDefaultDisplaySync();
 
 @Entry
@@ -14,6 +16,11 @@ struct CustomInput {
   @State screenWidth: number = 0
   @State screenHeight: number = 0
 
+  // 后端暴露变量
+  @State text: string = '^.^'       //  模型输出
+  @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
+
+
   aboutToAppear() {
     // 使用Display方案
     //const display = display.getDefaultDisplaySync();
@@ -24,7 +31,7 @@ struct CustomInput {
   build() {
     SideBarContainer(SideBarContainerType.Embed) {
       Column(){
-        Text('历史对话')//.textAlign(Alignment.Center)
+        Text('历史对话').fontSize(25)//.textAlign(Alignment.Center)
         SidebarComponent(){
 
         }
@@ -37,12 +44,12 @@ struct CustomInput {
               title: 'demo chatbot',
               needTitleBar: true,
               welcomeMessage: '我是你的本地AI bot',
-              botMessageBackgroundColor: Color.Grey,
+              botMessageBackgroundColor: $r('app.color.light_blue_bg'),
               botMessageTextColor: Color.Black,
               userMessageBackgroundColor: Color.White,
               userMessageTextColor: Color.Black,
-              botAvatar: $r('app.media.bot'), //chatbot头像
-              userAvatar: $r('app.media.human'),
+              botAvatar: $r('app.media.bot_ava'), //chatbot头像
+              userAvatar: $r('app.media.user_ava'),
               messageFontSize: 15,
               userInput: this.userInput,
               controller: this.chatController,
@@ -64,35 +71,21 @@ struct CustomInput {
                 setTimeout(() => {
                   ctl.postMessage(new ChatMessage({
                     role: ChatRole.Assistant,
-                    content: '这是一条测试回复这是一条测试回复这是一条测试回复这是一条测试回复这是一条测试回复这是一条测试回复'
+                    content: '这是一条测试回复    $$\alpha$$  '
                   }))
                   // 图片消息
-                  ctl.postMessage(new ChatMessage({
-                    role:ChatRole.Assistant,
-                    picurl:"https://foruda.gitee.com/avatar/1709712450038093632/8548349_changweizhang_1709712449.png"
-                  }));
+                  // ctl.postMessage(new ChatMessage({
+                  //   role:ChatRole.Assistant,
+                  //   picurl:"https://foruda.gitee.com/avatar/1709712450038093632/8548349_changweizhang_1709712449.png"
+                  // }));
+                  ctl.setTyping(false)
 
-                }, 3000)
+                }, 1000)
               }
-            }) {
+            })
+            {
 
               Column(){
-
-                TextInput({
-                  text: this.userInput
-                })
-                  .enterKeyType(EnterKeyType.Send)
-                  .fontColor(Color.Black)
-                  .backgroundColor(Color.White)
-                    //.width('75%')
-                  .flexGrow(1)
-                  .onChange((val) => {
-                    this.userInput = val
-                  })
-                  .onSubmit((ss) => {
-                    this.chatController.submitUserInput(this.userInput)
-                  })
-
                 Row() {
                   Button() {
                     Image($r('app.media.model_choose'))
@@ -117,6 +110,7 @@ struct CustomInput {
                         value: '取消',
                         action: () => console.log('已取消')
                       }
+
                     })
 
                   })
@@ -140,30 +134,46 @@ struct CustomInput {
                         value: '取消',
                         action: () => console.log('已取消')
                       }
+
                     })
 
                   })
-
-
-
 
                 }
                 .alignItems(VerticalAlign.Center) // 垂直居中对齐
                 .width('100%')
 
+                TextInput({
+                  text: this.userInput
+                })
+                  .enterKeyType(EnterKeyType.Send)
+                  .fontColor(Color.Black)
+                  .backgroundColor($r('app.color.input_background'))
+                    //.width('75%')
+                  .flexGrow(1)
+                  .onChange((val) => {
+                    this.userInput = val
+                  })
+                  .onSubmit(() => {
+                    this.chatController.submitUserInput(this.userInput)
+                  })
 
               }
-
 
 
             }
 
           }
+
         }
         .height('100%')
       }
 
     }
+    .controlButton({
+      left: 10,
+      top: 10
+    })
   }
 
   // aboutToAppear() {
@@ -172,4 +182,32 @@ struct CustomInput {
   //     this.needBackButton = params['needBackButton']
   //   }
   // }
+}
+
+/*
+  开始推理
+ */
+function startInfer(prompt: string) {
+
+}
+
+/*
+  停止推理
+ */
+function stopInfer() {
+
+}
+
+/*
+  结束模型使用
+ */
+function dropModel() {
+
+}
+
+/*
+  选择模型
+ */
+function chooseMeodel(name: string) {
+
 }
