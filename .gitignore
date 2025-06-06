@@ -1,6 +1,5 @@
 /node_modules
-/oh_modules/.ohpm
-/oh_modules/@ohos
+/oh_modules
 /local.properties
 /.idea
 **/build
@@ -12,4 +11,5 @@
 **/.test
 /.appanalyzer
 ./build-profile.json5
-/third_party
+/.vscode
+entry/src/main/resources/resfile/

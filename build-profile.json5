@@ -5,22 +5,36 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\User\\.ohos\\config\\default_OH_AIGC_local_wTsDGDwtgC-kDd04XgbROg5tEAPn9AIEJa-2EKhpuw4=.cer",
+          "certpath": "C:\\Users\\27643\\.ohos\\config\\sk_OH_AIGC_local_o-_aZDg1lg7zoqLW9_wpfwsT6O0JJ65sWw0lX7TagPc=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001AF1BCD85DEFF0A10A8E1EAB9FA937D1F26785B8AD4F3B3CB29B8F6B110C76F71B3A2614DDA003",
-          "profile": "C:\\Users\\User\\.ohos\\config\\default_OH_AIGC_local_wTsDGDwtgC-kDd04XgbROg5tEAPn9AIEJa-2EKhpuw4=.p7b",
+          "keyPassword": "0000001B0A586A2E74987B887695B6CB4733FAE37A07C04F94759793919FFFCA54F235971BA93A298E949A",
+          "profile": "C:\\Users\\27643\\.ohos\\config\\sk_OH_AIGC_local_o-_aZDg1lg7zoqLW9_wpfwsT6O0JJ65sWw0lX7TagPc=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\User\\.ohos\\config\\default_OH_AIGC_local_wTsDGDwtgC-kDd04XgbROg5tEAPn9AIEJa-2EKhpuw4=.p12",
-          "storePassword": "0000001A75E681D6D9E095AB02377BCBB67CE726275BE34CA34C642E8BA678CB3ABE76A8FC1C6D507BA4"
+          "storeFile": "C:\\Users\\27643\\.ohos\\config\\sk_OH_AIGC_local_o-_aZDg1lg7zoqLW9_wpfwsT6O0JJ65sWw0lX7TagPc=.p12",
+          "storePassword": "0000001B139D5DA194E80C6AF69256BFC9250441E918F48E63FE3C9F425E9D84E625859390BED00A1EB5FE"
+        }
+      },
+      {
+        "name": "8Ro8SV66NFCfYl15YT5kkP7T3ow2AyhIf8xTQgVWzmc",
+        "material": {
+          "certpath": "C:/Users/27643/.ohos/config/openharmony/auto_ohos_8Ro8SV66NFCfYl15YT5kkP7T3ow2AyhIf8xTQgVWzmc_OH_AIGC_local_com.mogu.OH_AIGC_local.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B676F614E50D49209F5651C9AA4A239ADC50E9CEA8F32BD68967256F836E7DC68ED6A8270001C5F",
+          "profile": "C:/Users/27643/.ohos/config/openharmony/auto_ohos_8Ro8SV66NFCfYl15YT5kkP7T3ow2AyhIf8xTQgVWzmc_OH_AIGC_local_com.mogu.OH_AIGC_local.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:/Users/27643/.ohos/config/openharmony/auto_ohos_8Ro8SV66NFCfYl15YT5kkP7T3ow2AyhIf8xTQgVWzmc_OH_AIGC_local_com.mogu.OH_AIGC_local.p12",
+          "storePassword": "0000001BD398421EED62BBA544A5D239275E9B799084D80EDFC5B472016902D326E53639CC8026ABFB8AA9"
         }
       }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
-        "compatibleSdkVersion": "5.0.3(15)",
-        "runtimeOS": "HarmonyOS",
+        "signingConfig": "8Ro8SV66NFCfYl15YT5kkP7T3ow2AyhIf8xTQgVWzmc",
+        "compatibleSdkVersion": 15,
+        "compileSdkVersion": 15,
+        "targetSdkVersion": 15,
+        "runtimeOS": "OpenHarmony",
         "buildOption": {
           "strictMode": {
             "caseSensitiveCheck": true,
@@ -31,7 +45,7 @@
     ],
     "buildModeSet": [
       {
-        "name": "debug",
+        "name": "debug"
       },
       {
         "name": "release"
