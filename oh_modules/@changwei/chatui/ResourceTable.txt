@@ -1,5 +1,0 @@
-string page_show 0x01000000
-media back 0x01000001
-media chatbot 0x01000002
-media clear 0x01000003
-media me 0x01000004

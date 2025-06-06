@@ -2,7 +2,7 @@
   "modelVersion": "5.0.4",
   "description": "Please describe the basic information.",
   "dependencies": {
-    "@changwei/chatui": "^0.0.6"
+    "@luvi/lv-markdown-in": "^1.1.1"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.21",

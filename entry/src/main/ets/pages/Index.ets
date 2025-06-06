@@ -1,9 +1,12 @@
-import { Chat, ChatRole, ChatMessage } from '@changwei/chatui'
-import { ChatController } from '@changwei/chatui'
+import { Chat,ChatController,IChatComponent } from '../component/Chat'
+import {ChatRole} from '../common/ChatConfig'
+import {ChatMessage} from '../component/ChatMessage'
 import router from '@ohos.router';
 import { SidebarComponent } from '../component/HistorySideBar'
 import display from '@ohos.display';
 import App from '@system.app';
+import { MarginType } from '@kit.ArkUI';
+import testNapi from 'libentry.so';
 
 const displayClass = display.getDefaultDisplaySync();
 
@@ -19,8 +22,6 @@ struct CustomInput {
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
-
-
   aboutToAppear() {
     // 使用Display方案
     //const display = display.getDefaultDisplaySync();
@@ -30,13 +31,15 @@ struct CustomInput {
 
   build() {
     SideBarContainer(SideBarContainerType.Embed) {
+      //悬浮窗视图
       Column(){
-        Text('历史对话').fontSize(25)//.textAlign(Alignment.Center)
+        Text('历史对话1')
+          .fontSize(25)//.textAlign(Alignment.Center)
+          .margin({top:20})
         SidebarComponent(){
-
         }
       }
-
+      //内容区视图
       Column(){
         Row() {
           Column() {
@@ -61,30 +64,9 @@ struct CustomInput {
               inputTextPlaceHolderColor: Color.Black,
               inputTextColor: Color.Black,
               useMarkdown: true,
-              onSendMessage: (ctl, message) => {
-                //发送用户消息
-                ctl.postMessage(message)
-                this.userInput = ''
-                //显示回复等待动画
-                ctl.setTyping(true)
-                //3秒后发送chatbot响应消息
-                setTimeout(() => {
-                  ctl.postMessage(new ChatMessage({
-                    role: ChatRole.Assistant,
-                    content: '这是一条测试回复    $$\alpha$$  '
-                  }))
-                  // 图片消息
-                  // ctl.postMessage(new ChatMessage({
-                  //   role:ChatRole.Assistant,
-                  //   picurl:"https://foruda.gitee.com/avatar/1709712450038093632/8548349_changweizhang_1709712449.png"
-                  // }));
-                  ctl.setTyping(false)
-
-                }, 1000)
-              }
+              onSendMessage: this.sendMessage,
             })
             {
-
               Column(){
                 Row() {
                   Button() {
@@ -112,9 +94,7 @@ struct CustomInput {
                       }
 
                     })
-
                   })
-
                   Button(){
                     Image($r('app.media.add_more'))
                   }
@@ -134,15 +114,11 @@ struct CustomInput {
                         value: '取消',
                         action: () => console.log('已取消')
                       }
-
                     })
-
                   })
-
                 }
                 .alignItems(VerticalAlign.Center) // 垂直居中对齐
                 .width('100%')
-
                 TextInput({
                   text: this.userInput
                 })
@@ -157,18 +133,16 @@ struct CustomInput {
                   .onSubmit(() => {
                     this.chatController.submitUserInput(this.userInput)
                   })
-
+                  .height('35vp')
+                  .margin({ top: '0.00vp', right: '16.00vp', bottom: '0', left: '16.00vp' })
+                  .padding({ top: '8.00vp', right: '16.00vp', bottom: '00vp', left: '16.00vp' })
               }
-
-
             }
-
           }
-
         }
         .height('100%')
+        .padding({ top: '0.00vp', right: '0.00vp', bottom: '0.00vp', left: '0.00vp' })
       }
-
     }
     .controlButton({
       left: 10,
@@ -176,12 +150,38 @@ struct CustomInput {
     })
   }
 
+  private async sendMessage(ctl:IChatComponent,message:ChatMessage){
+      //发送用户消息
+      ctl.postMessage(message)
+      this.userInput = ''
+      //显示回复等待动画
+      ctl.setTyping(true)
+      //3秒后发送chatbot响应消息
+      try {
+          const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
+          const fileTest = getContext().resourceDir+'/' + fileName;
+          testNapi.load_module(fileTest);
+          testNapi.inference_start(message.content,
+            (token:string)=>{
+                ctl.deleteMessage()
+                ctl.postMessage(new ChatMessage({
+                  role: ChatRole.Assistant,
+                  content: token
+                }))
+            })
+      } catch (err){
+        console.error("test:error,%s",err);
+      }
+  }
   // aboutToAppear() {
   //   const params = router.getParams(); // 获取传递过来的参数对象
   //   if(params) {
   //     this.needBackButton = params['needBackButton']
   //   }
   // }
+  //private onSendMessage(ctl:IChatComponent, message){
+
+  //}
 }
 
 /*
