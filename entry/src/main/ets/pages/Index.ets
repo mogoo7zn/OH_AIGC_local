@@ -33,12 +33,15 @@ struct CustomInput {
     SideBarContainer(SideBarContainerType.Embed) {
       //悬浮窗视图
       Column(){
-        Text('历史对话1')
+        Text('历史对话')
           .fontSize(25)//.textAlign(Alignment.Center)
-          .margin({top:20})
+          .margin({top: 12, bottom:12})
+          .height(35)
+
         SidebarComponent(){
         }
       }
+      .backgroundColor($r('app.color.sidebar_background'))
       //内容区视图
       Column(){
         Row() {
@@ -144,10 +147,19 @@ struct CustomInput {
         .padding({ top: '0.00vp', right: '0.00vp', bottom: '0.00vp', left: '0.00vp' })
       }
     }
+    .showControlButton(true)
     .controlButton({
       left: 10,
-      top: 10
+      top: 15,
+      width: 30,
+      height: 30,
+      icons: {
+        shown: $r("app.media.SideBarButton2") ,
+        hidden: $r("app.media.SideBarButton2") ,
+        switching: $r("app.media.SideBarButton2")
+      }
     })
+    .sideBarWidth('75%')
   }
 
   private async sendMessage(ctl:IChatComponent,message:ChatMessage){

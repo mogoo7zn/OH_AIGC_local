@@ -7,6 +7,10 @@
       {
         "name": "input_background",
         "value": "#33cDd8f6"
+      },
+      {
+        "name": "sidebar_background",
+        "value": "#D2DEE1"
       }
     ]
   }
