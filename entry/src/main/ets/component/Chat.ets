@@ -367,11 +367,11 @@ struct Chat {
 
         }
         .margin({ bottom: 10 })
-        .borderWidth({ top: 1 })
+        //.borderWidth({ top: 1 })
         .borderColor('#999')
-        .padding(10)
+        .padding(5)
         .width('100%')
-        .height(80)
+        .height(150)
       }
     }
 
