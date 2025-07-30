@@ -1,5 +1,5 @@
 {
-  "modelVersion": "5.0.4",
+  "modelVersion": "5.0.5",
   "description": "Please describe the basic information.",
   "dependencies": {
     "@luvi/lv-markdown-in": "^1.1.1"
