@@ -18,6 +18,7 @@ struct CustomInput {
   //static userInputPropmt: string = '在此处输入...'
   @State needBackButton: boolean = false
   chatController = new ChatController()
+  controller: TextAreaController = new TextAreaController()
   @State screenWidth: number = 0
   @State screenHeight: number = 0
 
@@ -45,11 +46,9 @@ struct CustomInput {
       }
       .backgroundColor($r('app.color.sidebar_background'))
       //内容区视图
-      Column(){
         Column() {
             Chat({
               title: 'demo chatbot',
-              needTitleBar: true,
               welcomeMessage: '我是你的本地AI bot',
               botMessageBackgroundColor: $r('app.color.light_blue_bg'),
               botMessageTextColor: Color.Black,
@@ -129,6 +128,7 @@ struct CustomInput {
                 Row(){
                   TextArea({
                     placeholder: CONST.InputPropmt,
+                    controller: this.controller
                   })
                     .enterKeyType(EnterKeyType.Send)
                     .fontColor(Color.Black)
@@ -140,7 +140,8 @@ struct CustomInput {
                     })
                     .onSubmit(() => {
                       this.chatController.submitUserInput(this.userInput)
-                      this.userInput = ''
+                      this.controller.stopEditing()
+                      this.controller.deleteText()
                     })
                     // .cancelButton({
                     //   style: CancelButtonStyle.INPUT,
@@ -165,7 +166,9 @@ struct CustomInput {
                   .backgroundColor($r('app.color.sendbutton_background'))
                   .onClick(() => {
                     this.chatController.submitUserInput(this.userInput)
-                    this.userInput = ''
+                    //this.sendMessage(this.chatController.chatCtrl,this.userInput)
+                    this.controller.stopEditing()
+                    this.controller.deleteText()
                   })
                 }
                 .layoutWeight(1)
@@ -176,7 +179,7 @@ struct CustomInput {
         }
         .height('100%')
         .padding({ top: '0.00vp', right: '0.00vp', bottom: '0.00vp', left: '0.00vp' })
-      }
+        .backgroundColor(Color.White)
     }
     .showControlButton(true)
     .controlButton({

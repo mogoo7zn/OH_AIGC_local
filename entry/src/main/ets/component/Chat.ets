@@ -24,6 +24,60 @@ interface IChatComponent {
 
 class ChatController {
   chatCtrl: IChatComponent | undefined = undefined
+  // chatCtrl: IChatComponent = {
+  //   userInput : '',
+  //   postMessage(msg: ChatMessage, clearInput: boolean = true) {
+  //     let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+  //     if (!lastMsg.content) {
+  //       this.messages.updateData(this.messages.totalCount() - 1, msg)
+  //     } else {
+  //       this.messages.pushData(msg)
+  //     }
+  //     if (clearInput) {
+  //       this.userInput = ''
+  //     }
+  //     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+  //     this.isResponding = false
+  //   },
+  //   deleteMessage(){
+  //     this.messages.removeData(this.messages.totalCount()-1)
+  //   },
+  //   setTyping(isTyping: boolean = false) {
+  //     if (isTyping) {
+  //       this.messages.pushData(new ChatMessage({
+  //         role: ChatRole.Assistant,
+  //         content: ""
+  //       }))
+  //       this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+  //     } else {
+  //       let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+  //       if (!lastMsg.content) {
+  //         this.messages.removeData(this.messages.totalCount() - 1)
+  //       }
+  //     }
+  //     this.isResponding = isTyping
+  //   },
+  //   submitUserInput(userIputText: string) {
+  //     this.userInput = userIputText
+  //     if (this.userInput && !this.isResponding) {
+  //       if (this.onSendMessage) {
+  //         this.isResponding = true
+  //         this.onSendMessage(this, new ChatMessage({
+  //           role: ChatRole.User,
+  //           content: this.userInput
+  //         }))
+  //       }
+  //     }
+  //   },
+  //   changeMessage(msg:ChatMessage){
+  //     console.info("test:msg=%s,c=%s",msg.content,this.messages.getString(this.messages.totalCount()-1));
+  //     this.messages.updateData(this.messages.totalCount()-1 , msg)
+  //     console.info("test:msg=%s",msg.content);
+  //     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+  //     this.userInput = ''
+  //     this.isResponding = false
+  //   }
+  // }
 
   submitUserInput(userIputText: string) {
     if (this.chatCtrl) {
@@ -48,7 +102,6 @@ struct Chat {
   public backIcon: Resource = $r('app.media.back')
   public clearChatIcon: Resource = $r('app.media.clear')
   @State title: string = "ChatBot"
-  @State needTitleBar: boolean = true
   public welcomeMessage: string = "主人好，我是智能助理，你的贴心小助手~"
   //自定义消息颜色
   public botMessageBackgroundColor: ResourceColor = '#fff'
@@ -192,7 +245,6 @@ struct Chat {
 
   build() {
     Column({ space: 0 }) {
-      if (this.needTitleBar) {
         RelativeContainer() {
           Text(this.title)
             .fontWeight(FontWeight.Bold)
@@ -237,9 +289,8 @@ struct Chat {
           }
         }
         .height(60)
-        .border({ width: { top: 0, bottom: 1 }, color: '#999' })
+        .border({ width: { top: 0, bottom: 1 }, color: Color.White })
         .width('100%')
-
       }
       List({ scroller: this.listScroller }) {
         LazyForEach(this.messages, (item: ChatMessage) => {
@@ -374,7 +425,6 @@ struct Chat {
         .height(150)
       }
     }
-
     .backgroundColor('#eee')
     .height('100%')
     .width('100%')
