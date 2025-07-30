@@ -5,6 +5,8 @@ import { ChatConfig, ChatRole } from '../common/ChatConfig'
 import font from '@ohos.font';
 import router from '@ohos.router';
 import { lvMarkdownIn } from '@luvi/lv-markdown-in'
+import { Constants as CONST} from '../common/Constants'
+
 
 interface IChatComponent {
   userInput: string
@@ -91,6 +93,11 @@ class ChatController {
 //@Preview
 @Component
 struct Chat {
+
+  controller = new ChatController()
+  Textcontroller: TextAreaController = new TextAreaController()
+
+
   @State messages: IChatDataSource = new ChatDataSource();
   @State userInput: string = ''
   @State isResponding: boolean = false
@@ -116,7 +123,7 @@ struct Chat {
   public inputTextColor: ResourceColor = Color.Black
   @State needInputControl: boolean = true
   @State needBackButton: boolean = false
-  public controller?: ChatController
+  // public controller?: ChatController
   public useMarkdown: boolean = false
 
   submitUserInput(userIputText: string) {
@@ -132,37 +139,37 @@ struct Chat {
     }
   }
 
-  @BuilderParam InputControl: () => void = this.defaultInputText
-
-  @Builder
-  defaultInputText() {
-    TextInput({
-      placeholder: this.inputTextPlaceHolder,
-      text: this.userInput
-    })
-      .fontColor(this.inputTextColor)
-      .placeholderColor(this.inputTextPlaceHolderColor)
-      .layoutWeight(1)
-      .onChange((value: string) => {
-        console.info(value);
-        this.userInput = value;
-      })
-      .onSubmit((EnterKeyType) => {
-        this.submitUserInput(this.userInput)
-      })
-
-    if (this.needSubmitButton) {
-      Button(this.submitButtonText)
-        .backgroundColor(0x317aff)
-        .margin({ left: 10 })
-        .width(60)
-        .height(30)
-        .onClick(() => {
-          this.hideKeyboard()
-          this.submitUserInput(this.userInput)
-        })
-    }
-  }
+  // @BuilderParam InputControl: () => void = this.defaultInputText
+  //
+  // @Builder
+  // defaultInputText() {
+  //   TextInput({
+  //     placeholder: this.inputTextPlaceHolder,
+  //     text: this.userInput
+  //   })
+  //     .fontColor(this.inputTextColor)
+  //     .placeholderColor(this.inputTextPlaceHolderColor)
+  //     .layoutWeight(1)
+  //     .onChange((value: string) => {
+  //       console.info(value);
+  //       this.userInput = value;
+  //     })
+  //     // .onSubmit((EnterKeyType) => {
+  //     //   this.submitUserInput(this.userInput)
+  //     // })
+  //
+  //   if (this.needSubmitButton) {
+  //     Button(this.submitButtonText)
+  //       .backgroundColor(0x317aff)
+  //       .margin({ left: 10 })
+  //       .width(60)
+  //       .height(30)
+  //       .onClick(() => {
+  //         this.hideKeyboard()
+  //         this.submitUserInput(this.userInput)
+  //       })
+  //   }
+  // }
 
   public setDefaultMessage(role: ChatRole, content: string) {
     if (content) {
@@ -291,7 +298,7 @@ struct Chat {
         .height(60)
         .border({ width: { top: 0, bottom: 1 }, color: Color.White })
         .width('100%')
-      }
+
       List({ scroller: this.listScroller }) {
         LazyForEach(this.messages, (item: ChatMessage) => {
           ListItem() {
@@ -329,6 +336,32 @@ struct Chat {
                 .padding(15)
                 .margin({ right: 15 })
                 .borderRadius(5)
+                // .border({
+                //   width : 1,
+                //   color : Color.Gray,
+                //   radius : 5,
+                //   style : BorderStyle.Solid
+                // })
+                // .border({
+                //   width: {
+                //     top: 1,
+                //     right: 1,
+                //     bottom: 3,
+                //     left: 1
+                //   },
+                //   color: {
+                //     top: '#f0f0f0',
+                //     right: '#f0f0f0',
+                //     bottom: '#a0a0a0',
+                //     left: '#f0f0f0'
+                //   }
+                // })
+                .shadow({
+                  radius: 5,        // 阴影模糊半径
+                  color: Color.Gray, // 阴影颜色
+                  offsetX: 0,        // X轴偏移
+                  offsetY: 4         // Y轴偏移（向下偏移模拟光照）
+                })
 
                 Button() {
                   Image(this.userAvatar)
@@ -336,7 +369,7 @@ struct Chat {
                     .height(40)
                 }
                 .type(ButtonType.Circle)
-                .backgroundColor('#eee')
+                .backgroundColor(Color.Transparent)
                 .width(40)
                 .height(40)
               }
@@ -393,6 +426,12 @@ struct Chat {
                 .padding(15)
                 .margin({ left: 15 })
                 .borderRadius(5)
+                .shadow({
+                  radius: 5,        // 阴影模糊半径
+                  color: Color.Gray, // 阴影颜色
+                  offsetX: 0,        // X轴偏移
+                  offsetY: 4         // Y轴偏移（向下偏移模拟光照）
+                })
 
                 Blank()
                   .width(55)
@@ -401,7 +440,6 @@ struct Chat {
               .padding(10)
               .width('100%')
             }
-
 
           }
 
@@ -412,30 +450,142 @@ struct Chat {
       .cachedCount(3)
       .scrollBar(BarState.Auto)
 
-      if (this.needInputControl) {
-        Row() {
-          this.InputControl()
+      // if (this.needInputControl) {
+      //   Row() {
+      //     this.InputControl()
+      //
+      //   }
+      //   .margin({ bottom: 10 })
+      //   //.borderWidth({ top: 1 })
+      //   .borderColor('#999')
+      //   .padding(5)
+      //   .width('100%')
+      //   .height(150)
+      // }
 
+      Column(){
+        Row() {
+          Button() {
+            Image($r('app.media.model_choose')).width(25).height(25)
+          }
+          .backgroundColor(Color.White)
+          .aspectRatio(1)        // 宽高比1:1 → 高度=宽度
+          .width('30')
+          .margin(5)
+          .onClick(() => {
+            ActionSheet.show({
+              title: '您的模型',
+              message: '请选择所需模型',
+              sheets: [
+                { title: 'Qwen3', action: () => {
+                  console.log('Get Alert Dialog handled')
+                } },
+                { title: 'Stable Diffusion', action: () => {
+                  console.log('Get Alert Dialog handled')
+                } }
+              ],
+              confirm: {
+                value: '取消',
+                action: () => console.log('已取消')
+              }
+
+            })
+          })
+          Button(){
+            Image($r('app.media.add_more')).width(25).height(25)
+          }
+          .backgroundColor(Color.White)
+          .aspectRatio(1)        // 宽高比1:1 → 高度=宽度
+          .width('30')
+          .margin(5)
+          .onClick(() => {
+            ActionSheet.show({
+              title: '选择您要上传的文件类型',
+              message: '',
+              sheets: [
+                { title: '图片', action: () => { } },
+                { title: '音频', action: () => {} }
+              ],
+              confirm: {
+                value: '取消',
+                action: () => console.log('已取消')
+              }
+            })
+          })
         }
+        .alignItems(VerticalAlign.Center) // 垂直居中对齐
+        .width('100%')
+        .layoutWeight(1)
+        //.margin(5)
+
+        Row(){
+          TextArea({
+            placeholder: CONST.InputPropmt,
+            controller: this.Textcontroller
+          })
+            .enterKeyType(EnterKeyType.Send)
+            .fontColor(Color.Black)
+            .backgroundColor($r('app.color.input_background'))
+            .width('75%')
+            .flexGrow(1)
+            .onChange((val) => {
+              this.userInput = val
+            })
+            .onSubmit(() => {
+              this.controller.submitUserInput(this.userInput)
+              this.Textcontroller.stopEditing()
+              this.Textcontroller.deleteText()
+            })
+            // .cancelButton({
+            //   style: CancelButtonStyle.INPUT,
+            //   icon: {
+            //     size: 20,
+            //     src: $r('app.media.InputDelete'),
+            //     color: Color.Gray
+            //   }
+            // })
+            .caretColor(Color.Black)
+            .fontSize(12)
+            .wordBreak(WordBreak.BREAK_ALL)
+            .height('100%')
+            .margin({ top: 0, right: 5, bottom: 0, left: 5 })
+          //.padding({ top: 5, right: 5, bottom: 0, left: 5 })
+
+          Button(){
+            Image($r('app.media.SendButton')).width(30).height(30)
+          }
+          .height('100%')
+          .type(ButtonType.Circle)
+          .backgroundColor($r('app.color.sendbutton_background'))
+          .onClick(() => {
+            this.controller.submitUserInput(this.userInput)
+            //this.sendMessage(this.chatController.chatCtrl,this.userInput)
+            this.Textcontroller.stopEditing()
+            this.Textcontroller.deleteText()
+          })
+        }
+        .layoutWeight(1)
+        .width('100%')
+
+      }
         .margin({ bottom: 10 })
         //.borderWidth({ top: 1 })
-        .borderColor('#999')
+        //.borderColor('#999')
         .padding(5)
         .width('100%')
         .height(150)
-      }
     }
-    .backgroundColor('#eee')
+    .backgroundColor(Color.White)
     .height('100%')
     .width('100%')
   }
 
-  aboutToDisappear() {
-    if (this.controller) {
-      this.controller = undefined
-    }
-
-  }
+  // aboutToDisappear() {
+  //   if (this.controller) {
+  //     this.controller = undefined
+  //   }
+  //
+  // }
 }
 
 export { Chat, IChatComponent, ChatController }
