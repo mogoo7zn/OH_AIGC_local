@@ -3,6 +3,22 @@
     {
       "name": "start_window_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "light_blue_bg",
+      "value": "#ADD8E6"
+    },
+    {
+      "name": "input_background",
+      "value": "#33cDd8f6"
+    },
+    {
+      "name": "sidebar_background",
+      "value": "#D2DEE1"
+    },
+    {
+      "name": "sendbutton_background",
+      "value": "#91DEE9"
     }
   ]
 }

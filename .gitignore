@@ -11,5 +11,5 @@
 **/.test
 /.appanalyzer
 ./build-profile.json5
-/.vscode
+.vscode
 entry/src/main/resources/resfile/

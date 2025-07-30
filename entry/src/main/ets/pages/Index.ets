@@ -7,6 +7,7 @@ import display from '@ohos.display';
 import App from '@system.app';
 import { MarginType } from '@kit.ArkUI';
 import testNapi from 'libentry.so';
+import { Constants as CONST} from '../common/Constants'
 
 const displayClass = display.getDefaultDisplaySync();
 
@@ -14,6 +15,7 @@ const displayClass = display.getDefaultDisplaySync();
 @Component
 struct CustomInput {
   @State userInput: string = ''
+  //static userInputPropmt: string = '在此处输入...'
   @State needBackButton: boolean = false
   chatController = new ChatController()
   @State screenWidth: number = 0
@@ -33,16 +35,18 @@ struct CustomInput {
     SideBarContainer(SideBarContainerType.Embed) {
       //悬浮窗视图
       Column(){
-        Text('历史对话1')
+        Text('历史对话')
           .fontSize(25)//.textAlign(Alignment.Center)
-          .margin({top:20})
+          .margin({top: 12, bottom:12})
+          .height(35)
+
         SidebarComponent(){
         }
       }
+      .backgroundColor($r('app.color.sidebar_background'))
       //内容区视图
       Column(){
-        Row() {
-          Column() {
+        Column() {
             Chat({
               title: 'demo chatbot',
               needTitleBar: true,
@@ -70,7 +74,7 @@ struct CustomInput {
               Column(){
                 Row() {
                   Button() {
-                    Image($r('app.media.model_choose'))
+                    Image($r('app.media.model_choose')).width(25).height(25)
                   }
                   .backgroundColor(Color.White)
                   .aspectRatio(1)        // 宽高比1:1 → 高度=宽度
@@ -96,7 +100,7 @@ struct CustomInput {
                     })
                   })
                   Button(){
-                    Image($r('app.media.add_more'))
+                    Image($r('app.media.add_more')).width(25).height(25)
                   }
                   .backgroundColor(Color.White)
                   .aspectRatio(1)        // 宽高比1:1 → 高度=宽度
@@ -119,35 +123,74 @@ struct CustomInput {
                 }
                 .alignItems(VerticalAlign.Center) // 垂直居中对齐
                 .width('100%')
-                TextInput({
-                  text: this.userInput
-                })
-                  .enterKeyType(EnterKeyType.Send)
-                  .fontColor(Color.Black)
-                  .backgroundColor($r('app.color.input_background'))
-                    //.width('75%')
-                  .flexGrow(1)
-                  .onChange((val) => {
-                    this.userInput = val
+                .layoutWeight(1)
+                //.margin(5)
+
+                Row(){
+                  TextArea({
+                    placeholder: CONST.InputPropmt,
                   })
-                  .onSubmit(() => {
+                    .enterKeyType(EnterKeyType.Send)
+                    .fontColor(Color.Black)
+                    .backgroundColor($r('app.color.input_background'))
+                    .width('75%')
+                    .flexGrow(1)
+                    .onChange((val) => {
+                      this.userInput = val
+                    })
+                    .onSubmit(() => {
+                      this.chatController.submitUserInput(this.userInput)
+                      this.userInput = ''
+                    })
+                    // .cancelButton({
+                    //   style: CancelButtonStyle.INPUT,
+                    //   icon: {
+                    //     size: 20,
+                    //     src: $r('app.media.InputDelete'),
+                    //     color: Color.Gray
+                    //   }
+                    // })
+                    .caretColor(Color.Black)
+                    .fontSize(12)
+                    .wordBreak(WordBreak.BREAK_ALL)
+                    .height('100%')
+                    .margin({ top: 0, right: 5, bottom: 0, left: 5 })
+                    //.padding({ top: 5, right: 5, bottom: 0, left: 5 })
+
+                  Button(){
+                    Image($r('app.media.SendButton')).width(30).height(30)
+                  }
+                  .height('100%')
+                  .type(ButtonType.Circle)
+                  .backgroundColor($r('app.color.sendbutton_background'))
+                  .onClick(() => {
                     this.chatController.submitUserInput(this.userInput)
+                    this.userInput = ''
                   })
-                  .height('35vp')
-                  .margin({ top: '0.00vp', right: '16.00vp', bottom: '0', left: '16.00vp' })
-                  .padding({ top: '8.00vp', right: '16.00vp', bottom: '00vp', left: '16.00vp' })
+                }
+                .layoutWeight(1)
+                .width('100%')
+
               }
             }
-          }
         }
         .height('100%')
         .padding({ top: '0.00vp', right: '0.00vp', bottom: '0.00vp', left: '0.00vp' })
       }
     }
+    .showControlButton(true)
     .controlButton({
       left: 10,
-      top: 10
+      top: 15,
+      width: 30,
+      height: 30,
+      icons: {
+        shown: $r("app.media.SideBarButton2") ,
+        hidden: $r("app.media.SideBarButton2") ,
+        switching: $r("app.media.SideBarButton2")
+      }
     })
+    .sideBarWidth('75%')
   }
 
   private async sendMessage(ctl:IChatComponent,message:ChatMessage){
