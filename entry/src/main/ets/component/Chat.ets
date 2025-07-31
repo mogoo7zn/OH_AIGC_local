@@ -25,9 +25,14 @@ interface IChatComponent {
 }
 
 class ChatController {
-  chatCtrl: IChatComponent | undefined = undefined
-  // chatCtrl: IChatComponent = {
-  //   userInput : '',
+  chatCtrl?: IChatComponent
+  // userInput: string = '';
+  // messages: IChatDataSource = new ChatDataSource();
+  // listScroller: Scroller = new Scroller();
+  // isResponding: boolean = false;
+  // onSendMessage?: (ctrl: IChatComponent, msg: ChatMessage) => void;
+  //
+  //
   //   postMessage(msg: ChatMessage, clearInput: boolean = true) {
   //     let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
   //     if (!lastMsg.content) {
@@ -40,10 +45,10 @@ class ChatController {
   //     }
   //     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
   //     this.isResponding = false
-  //   },
+  //   }
   //   deleteMessage(){
   //     this.messages.removeData(this.messages.totalCount()-1)
-  //   },
+  //   }
   //   setTyping(isTyping: boolean = false) {
   //     if (isTyping) {
   //       this.messages.pushData(new ChatMessage({
@@ -58,7 +63,7 @@ class ChatController {
   //       }
   //     }
   //     this.isResponding = isTyping
-  //   },
+  //   }
   //   submitUserInput(userIputText: string) {
   //     this.userInput = userIputText
   //     if (this.userInput && !this.isResponding) {
@@ -70,7 +75,7 @@ class ChatController {
   //         }))
   //       }
   //     }
-  //   },
+  //   }
   //   changeMessage(msg:ChatMessage){
   //     console.info("test:msg=%s,c=%s",msg.content,this.messages.getString(this.messages.totalCount()-1));
   //     this.messages.updateData(this.messages.totalCount()-1 , msg)
@@ -79,14 +84,7 @@ class ChatController {
   //     this.userInput = ''
   //     this.isResponding = false
   //   }
-  // }
 
-  submitUserInput(userIputText: string) {
-    if (this.chatCtrl) {
-      this.chatCtrl.submitUserInput(userIputText)
-    }
-
-  }
 }
 
 
@@ -529,7 +527,7 @@ struct Chat {
               this.userInput = val
             })
             .onSubmit(() => {
-              this.controller.submitUserInput(this.userInput)
+              this.submitUserInput(this.userInput)
               this.Textcontroller.stopEditing()
               this.Textcontroller.deleteText()
             })
@@ -555,7 +553,7 @@ struct Chat {
           .type(ButtonType.Circle)
           .backgroundColor($r('app.color.sendbutton_background'))
           .onClick(() => {
-            this.controller.submitUserInput(this.userInput)
+            this.submitUserInput(this.userInput)
             //this.sendMessage(this.chatController.chatCtrl,this.userInput)
             this.Textcontroller.stopEditing()
             this.Textcontroller.deleteText()

@@ -4,7 +4,6 @@ import {ChatMessage} from '../component/ChatMessage'
 import router from '@ohos.router';
 import { SidebarComponent } from '../component/HistorySideBar'
 import display from '@ohos.display';
-import App from '@system.app';
 import { MarginType } from '@kit.ArkUI';
 import testNapi from 'libentry.so';
 
@@ -14,20 +13,13 @@ const displayClass = display.getDefaultDisplaySync();
 @Component
 struct CustomInput {
   @State userInput: string = ''
-  //static userInputPropmt: string = '在此处输入...'
   @State needBackButton: boolean = false
-
-  @State screenWidth: number = 0
-  @State screenHeight: number = 0
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
   aboutToAppear() {
-    // 使用Display方案
-    //const display = display.getDefaultDisplaySync();
-    this.screenWidth = px2vp(displayClass.width);
-    this.screenHeight = px2vp(displayClass.height);
+
   }
 
   build() {
