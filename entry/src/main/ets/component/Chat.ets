@@ -97,7 +97,6 @@ struct Chat {
   controller = new ChatController()
   Textcontroller: TextAreaController = new TextAreaController()
 
-
   @State messages: IChatDataSource = new ChatDataSource();
   @State userInput: string = ''
   @State isResponding: boolean = false
@@ -108,21 +107,19 @@ struct Chat {
   public userAvatar: Resource = $r('app.media.me')
   public backIcon: Resource = $r('app.media.back')
   public clearChatIcon: Resource = $r('app.media.clear')
-  @State title: string = "ChatBot"
+  title: string = "ChatBot"
   public welcomeMessage: string = "主人好，我是智能助理，你的贴心小助手~"
   //自定义消息颜色
-  public botMessageBackgroundColor: ResourceColor = '#fff'
+  //public botMessageBackgroundColor: ResourceColor = '#fff'
   public botMessageTextColor: ResourceColor = Color.Black
-  public userMessageBackgroundColor: ResourceColor = '#96ed6a'
+  // public userMessageBackgroundColor: ResourceColor = '#96ed6a'
   public userMessageTextColor: ResourceColor = Color.Black
   public messageFontSize: number = 18
   public needSubmitButton: boolean = true
-  public submitButtonText: string = "Send"
-  public inputTextPlaceHolder: string = "Let's talk"
-  public inputTextPlaceHolderColor: ResourceColor = "#999"
-  public inputTextColor: ResourceColor = Color.Black
+  //public submitButtonText: string = "Send"
+  //public inputTextColor: ResourceColor = Color.Black
   @State needInputControl: boolean = true
-  @State needBackButton: boolean = false
+  //@State needBackButton: boolean = false
   // public controller?: ChatController
   public useMarkdown: boolean = false
 
@@ -279,21 +276,21 @@ struct Chat {
           })
           .backgroundColor('#0fff')
 
-          if (this.needBackButton) {
-            Button() {
-              Image(this.backIcon).width(30).height(30)
-            }
-            .alignRules({
-              center: { anchor: '__container__', align: VerticalAlign.Center },
-              left: { anchor: '__container__', align: HorizontalAlign.Start }
-            })
-            .margin({ left: 10 })
-            .id('backBtn')
-            .onClick(() => {
-              router.back()
-            })
-            .backgroundColor('#0fff')
-          }
+          // if (this.needBackButton) {
+          //   Button() {
+          //     Image(this.backIcon).width(30).height(30)
+          //   }
+          //   .alignRules({
+          //     center: { anchor: '__container__', align: VerticalAlign.Center },
+          //     left: { anchor: '__container__', align: HorizontalAlign.Start }
+          //   })
+          //   .margin({ left: 10 })
+          //   .id('backBtn')
+          //   .onClick(() => {
+          //     router.back()
+          //   })
+          //   .backgroundColor('#0fff')
+          // }
         }
         .height(60)
         .border({ width: { top: 0, bottom: 1 }, color: Color.White })
@@ -330,7 +327,7 @@ struct Chat {
                     }
                   }
                 }
-                .backgroundColor(this.userMessageBackgroundColor)
+                .backgroundColor($r('app.color.userMessageBackgroundColor'))
                 .layoutWeight(1)
                 //.height(80)
                 .padding(15)
@@ -420,7 +417,7 @@ struct Chat {
                   }
                 }
                 .alignItems(HorizontalAlign.Start)
-                .backgroundColor(this.botMessageBackgroundColor)
+                .backgroundColor($r('app.color.botMessageBackgroundColor'))
                 .layoutWeight(1)
                 //.height(80)
                 .padding(15)

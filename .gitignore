@@ -13,3 +13,4 @@
 ./build-profile.json5
 .vscode
 entry/src/main/resources/resfile/
+/build-profile.json5

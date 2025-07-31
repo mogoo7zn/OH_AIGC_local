@@ -48,22 +48,14 @@ struct CustomInput {
             Chat({
               title: 'demo chatbot',
               welcomeMessage: '我是你的本地AI bot',
-              botMessageBackgroundColor: $r('app.color.light_blue_bg'),
               botMessageTextColor: Color.Black,
-              userMessageBackgroundColor: Color.White,
               userMessageTextColor: Color.Black,
               botAvatar: $r('app.media.bot_ava'), //chatbot头像
               userAvatar: $r('app.media.user_ava'),
               messageFontSize: 15,
               userInput: this.userInput,
-
-              needBackButton: this.needBackButton, //是否显示顶部返回按钮。点击返回导航上一页
               needInputControl:true,
               needSubmitButton: true,
-              submitButtonText: "send",
-              inputTextPlaceHolder: "给你的本地AI发送消息",
-              inputTextPlaceHolderColor: Color.Black,
-              inputTextColor: Color.Black,
               useMarkdown: true,
               onSendMessage: this.sendMessage,
             })
