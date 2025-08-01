@@ -8,6 +8,7 @@ import App from '@system.app';
 import { MarginType } from '@kit.ArkUI';
 import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const displayClass = display.getDefaultDisplaySync();
 
@@ -203,6 +204,7 @@ struct CustomInput {
       try {
           const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
           const fileTest = getContext().resourceDir+'/' + fileName;
+          hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
           testNapi.load_module(fileTest);
           testNapi.inference_start(message.content,
             (token:string)=>{

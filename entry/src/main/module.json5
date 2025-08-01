@@ -38,7 +38,7 @@
         "name": "EntryBackupAbility",
         "srcEntry": "./ets/entrybackupability/EntryBackupAbility.ets",
         "type": "backup",
-        "exported": false,
+        "exported": true,
         "metadata": [
           {
             "name": "ohos.extension.backup",
