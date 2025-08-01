@@ -27,7 +27,7 @@ llama_cpp::llama_cpp(std::string path){
     ctx_params.n_ctx = n_ctx_num;
     ctx_params.n_batch = 128;
     ctx_params.no_perf = false;
-    ctx_params.n_threads = 4;
+    ctx_params.n_threads = 8;   //设置推理启用线程数
     ctx = llama_init_from_model(model, ctx_params);
     if (ctx == nullptr) {
         OH_LOG_ERROR(LOG_APP,"initial context error!");

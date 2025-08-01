@@ -16,6 +16,7 @@ const displayClass = display.getDefaultDisplaySync();
 struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
+  @State selected_model_name : string = ''
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
@@ -52,6 +53,7 @@ struct CustomInput {
               needSubmitButton: true,
               useMarkdown: true,
               onSendMessage: this.sendMessage,
+              selected_model_name: this.selected_model_name,
             })
         }
         .height('100%')
@@ -81,7 +83,8 @@ struct CustomInput {
       ctl.setTyping(true)
       //3秒后发送chatbot响应消息
       try {
-          const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
+          //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
+          const fileName = this.selected_model_name
           const fileTest = getContext().resourceDir+'/' + fileName;
           hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
           testNapi.load_module(fileTest);
