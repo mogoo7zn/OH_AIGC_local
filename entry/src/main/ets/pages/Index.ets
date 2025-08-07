@@ -100,6 +100,7 @@ struct CustomInput {
         console.error("test:error,%s",err);
       }
   }
+
   // aboutToAppear() {
   //   const params = router.getParams(); // 获取传递过来的参数对象
   //   if(params) {
