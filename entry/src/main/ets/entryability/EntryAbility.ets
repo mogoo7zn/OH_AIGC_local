@@ -3,6 +3,42 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { preferences } from '@kit.ArkData';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { fileShare } from '@kit.CoreFileKit';
+import { Constants as CONST} from '../common/Constants'
+
+
+async function activatePermissionExample(uris: string) : Promise<boolean> {
+  try {
+    //let uri = "file://docs/storage/Users/username/tmp.txt";
+    let uri = uris;
+    console.info("trying activate uris:" + uris);
+    let policyInfo: fileShare.PolicyInfo = {
+      uri: uri,
+      operationMode: fileShare.OperationMode.READ_MODE,
+    };
+    let policies: Array<fileShare.PolicyInfo> = [policyInfo];
+    fileShare.activatePermission(policies).then(() => {
+      console.info("activated uris:" + uri);
+      console.info("activatePermission successfully");
+    }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
+      console.error("activatePermission failed with error message: " + err.message + ", error code: " + err.code);
+      if (err.code == 13900001 && err.data) {
+        for (let i = 0; i < err.data.length; i++) {
+          console.error("error code : " + JSON.stringify(err.data[i].code));
+          console.error("error uri : " + JSON.stringify(err.data[i].uri));
+          console.error("error reason : " + JSON.stringify(err.data[i].message));
+          if (err.data[i].code == fileShare.PolicyErrorCode.PERMISSION_NOT_PERSISTED) {
+            //可以选择进行持久化后再激活。
+          }
+        }
+      }
+    });
+  } catch (error) {
+    let err: BusinessError = error as BusinessError;
+    console.error(`activatePermission failed with err, Error code: ${err.code}, message: ${err.message}`);
+  }
+  return true;
+}
 
 const DOMAIN = 0x0000;
 let dataPreferences: preferences.Preferences | null = null;
@@ -23,6 +59,8 @@ export default class EntryAbility extends UIAbility {
 
     let options: preferences.Options = { name: 'myStore' };
     dataPreferences = preferences.getPreferencesSync(this.context, options);
+
+    activatePermissionExample(CONST.model_uri);
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {

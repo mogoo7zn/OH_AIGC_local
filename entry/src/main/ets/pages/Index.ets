@@ -8,8 +8,8 @@ import { MarginType } from '@kit.ArkUI';
 import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { fileIo } from '@kit.CoreFileKit';
 
-const displayClass = display.getDefaultDisplaySync();
 
 @Entry
 @Component
@@ -90,9 +90,12 @@ struct CustomInput {
           // const fileTest = getContext().resourceDir+'/' + fileName;
           //const fileTest = CONST.model_uri;
           const fileTest = 'file://docs/storage/Users/currentUser/Download/qwen2.5-3b-instruct-q8_0.gguf'
+          let file = fileIo.openSync(fileTest, fileIo.OpenMode.READ_ONLY);
+          console.info("test :" + file.path )
           hilog.info(0, 'testTag', 'model_uri:' + fileTest);
+          hilog.info(0, 'testTag', 'model_path:' + file.path);
           hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
-          testNapi.load_module(fileTest);
+          testNapi.load_module(file.path);
           testNapi.inference_start(message.content,
             (token:string)=>{
                 // TODO : 实现流式输出显示
