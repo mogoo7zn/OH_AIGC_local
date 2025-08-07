@@ -17,6 +17,7 @@ struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
+  //@Consume('modeluri') model_uri : string
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
@@ -84,12 +85,17 @@ struct CustomInput {
       //3秒后发送chatbot响应消息
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-          const fileName = this.selected_model_name
-          const fileTest = getContext().resourceDir+'/' + fileName;
+          // TODO : 实现读取用户文件系统中的模型文件
+          // const fileName = this.selected_model_name
+          // const fileTest = getContext().resourceDir+'/' + fileName;
+          //const fileTest = CONST.model_uri;
+          const fileTest = 'file://docs/storage/Users/currentUser/Download/qwen2.5-3b-instruct-q8_0.gguf'
+          hilog.info(0, 'testTag', 'model_uri:' + fileTest);
           hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
           testNapi.load_module(fileTest);
           testNapi.inference_start(message.content,
             (token:string)=>{
+                // TODO : 实现流式输出显示
                 ctl.deleteMessage()
                 ctl.postMessage(new ChatMessage({
                   role: ChatRole.Assistant,

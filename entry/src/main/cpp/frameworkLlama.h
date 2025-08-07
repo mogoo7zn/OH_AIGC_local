@@ -11,7 +11,7 @@
 #include <functional>
 #include "llama.h"
 
-#define n_ctx_num 256
+#define n_ctx_num 1024
 
 
 class llama_cpp{

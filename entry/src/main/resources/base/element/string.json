@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "label"
+    },
+    {
+      "name": "Permission_Reason",
+      "value": "需要读取用户本地的模型文件等，用于推理"
     }
   ]
 }
