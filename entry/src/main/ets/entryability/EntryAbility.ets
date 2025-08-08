@@ -57,8 +57,15 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    let options: preferences.Options = { name: 'myStore' };
-    dataPreferences = preferences.getPreferencesSync(this.context, options);
+    preferences.getPreferences(this.context, 'myStore', (err: BusinessError, val: preferences.Preferences) => {
+      if (err) {
+        console.error("Failed to get preferences. code =" + err.code + ", message =" + err.message);
+        return;
+      }
+      dataPreferences = val;
+      console.info("Succeeded in getting preferences.");
+    })
+
 
     activatePermissionExample(CONST.model_uri);
 

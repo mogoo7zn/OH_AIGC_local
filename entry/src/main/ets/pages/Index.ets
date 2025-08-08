@@ -96,14 +96,46 @@ struct CustomInput {
           hilog.info(0, 'testTag', 'model_path:' + file.path);
           hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
           testNapi.load_module(file.path);
+
+        // 保存流式输出的累积消息
+        let accumulatedContent = '';
+        let pre_token: string;
+        let token_diff: string;
+
           testNapi.inference_start(message.content,
             (token:string)=>{
-                // TODO : 实现流式输出显示
-                ctl.deleteMessage()
-                ctl.postMessage(new ChatMessage({
-                  role: ChatRole.Assistant,
-                  content: token
-                }))
+              // TODO : 实现流式输出显示
+              // ctl.deleteMessage()
+              // ctl.postMessage(new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: token
+              // }))
+
+              // 累加token
+              // accumulatedContent += token;
+
+              //token_diff = subtractString(token, pre_token);
+
+              let newMsg = new ChatMessage({
+                role: ChatRole.Assistant,
+                content: token
+              });
+              hilog.info(0, 'testTag', 'token:' + token + '\n');
+
+
+              // 更新消息（而不是删除后重新发送）
+              ctl.changeMessage(newMsg);
+
+              // ctl.changeMessage(new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: token
+              // }))
+              // ctl.postMessage(new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: pre_token
+              // }))
+
+              // pre_token = token;
             })
       } catch (err){
         console.error("test:error,%s",err);

@@ -8,6 +8,7 @@ import { lvMarkdownIn, lvTitle, lvText, lvLink, lvCode, lvQuote,  } from '@luvi/
 import { Constants as CONST} from '../common/Constants'
 import { UIContext } from '@kit.ArkUI';
 import { lvImage } from '@luvi/lv-markdown-in/src/main/ets/lv-markdown-in/lib/domain/LvImage';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 
 import { picker } from '@kit.CoreFileKit';
@@ -115,6 +116,8 @@ interface IChatComponent {
   //发送消息到UI
   //clearInput：指示是否清空输入框
   postMessage(msg: ChatMessage, clearInput?: boolean): void
+
+  postMessageStream(msg: ChatMessage, clearInput?: boolean): void
 
   deleteMessage() : void
 
@@ -448,9 +451,35 @@ struct Chat {
     this.isResponding = false
   }
 
+  postMessageStream(msg: ChatMessage, clearInput: boolean = true) {
+    let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+    if (!lastMsg.content) {
+      this.messages.updateData(this.messages.totalCount() - 1, msg)
+    } else {
+      this.messages.pushData(msg)
+    }
+    if (clearInput) {
+      this.userInput = ''
+    }
+    this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+    this.isResponding = false
+  }
+
   changeMessage(msg:ChatMessage){
+    hilog.info(0, 'testTag', 'Updating message:' + msg.content);
+    console.info("Updating message:", msg.content);
     console.info("test:msg=%s,c=%s",msg.content,this.messages.getString(this.messages.totalCount()-1));
     this.messages.updateData(this.messages.totalCount()-1 , msg)
+
+    // this.messages.removeData(this.messages.totalCount()-1)
+    // this.messages.pushData(msg)
+
+    // let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+    // if (!lastMsg.content) {
+    //   this.messages.updateData(this.messages.totalCount() - 1, msg)
+    // } else {
+    //   this.messages.pushData(msg)
+    // }
     console.info("test:msg=%s",msg.content);
     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
     this.userInput = ''
