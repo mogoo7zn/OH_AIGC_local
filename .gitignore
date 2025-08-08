@@ -10,7 +10,7 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
-build-profile.json5
+/build-profile.json5
 .vscode
 entry/src/main/resources/resfile/
 

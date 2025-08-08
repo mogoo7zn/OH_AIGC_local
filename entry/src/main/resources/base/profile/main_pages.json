@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "pages/setting"
+    "pages/setting",
+    "pages/PromptSetting"
   ]
 }

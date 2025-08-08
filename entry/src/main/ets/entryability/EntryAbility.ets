@@ -68,6 +68,7 @@ export default class EntryAbility extends UIAbility {
       console.info("Succeeded in getting preferences.");
     })
 
+    // 激活模型文件的使用权限
     activatePermissionExample(CONST.model_uri);
 
     let tokenType = relationalStore.Tokenizer.ICU_TOKENIZER;

@@ -9,7 +9,7 @@ import { Constants as CONST} from '../common/Constants'
 import { UIContext } from '@kit.ArkUI';
 import { lvImage } from '@luvi/lv-markdown-in/src/main/ets/lv-markdown-in/lib/domain/LvImage';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-
+import { Picker_persistPermission } from '../pages/setting'
 
 import { picker } from '@kit.CoreFileKit';
 import { fileShare } from '@kit.CoreFileKit';
@@ -321,8 +321,8 @@ struct Chat {
   // public controller?: ChatController
   public useMarkdown: boolean = true
 
-  submitUserTextInput(userIputText: string) {
-    this.userInput = userIputText
+  submitUserTextInput(userInputText: string) {
+    this.userInput = userInputText
     if (this.userInput && !this.isResponding) {
       if (this.onSendMessage) {
         this.isResponding = true
@@ -334,13 +334,26 @@ struct Chat {
     }
   }
 
-  submitUserPictureInput(userIputPictureUrl: string) {
+  submitUserPictureInput(userInputPictureUrl: string) {
     if (!this.isResponding) {
       if (this.onSendMessage) {
         this.isResponding = true
         this.onSendMessage(this, new ChatMessage({
           role: ChatRole.User,
-          picurl: userIputPictureUrl
+          picurl: userInputPictureUrl
+        }))
+      }
+    }
+  }
+
+  submitUserAudioInput(userIputAudioUrl: string) {
+    if (!this.isResponding) {
+      if (this.onSendMessage) {
+        this.isResponding = true
+        this.onSendMessage(this, new ChatMessage({
+          role: ChatRole.User,
+          // picurl: userIputPictureUrl
+          // TODO : 增加音频类型，并实现播放组件。（ ? :是否需要持久化权限)
         }))
       }
     }
@@ -915,21 +928,44 @@ struct Chat {
                 this.selected_file_type = value.value as string;
                 // 若之后要添加更多的文件类型，此处改用switch-case即可
                 if(this.selected_file_type_index == 0){
-                  // this.PickPhoto();
-                  // this.pickerController
-                  //this.submitUserPictureInput(this.selectUris[0])
 
-                  // example()
-                  //
-                  // this.photoViewPicker.select(this.photoSelectOptions).then((photoSelectResult: photoAccessHelper.PhotoSelectResult) => {
-                  //   this.uris = photoSelectResult.photoUris;
-                  //   console.info('photoViewPicker.select to file succeed and uris are:' + this.uris);
-                  // }).catch((err: BusinessError) => {
-                  //   console.error(`Invoke photoViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
-                  // })
-                  // this.submitUserPictureInput(this.uris[0]);
+                  try {
+                    let PhotoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+                    PhotoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+                    PhotoSelectOptions.maxSelectNumber = 1;
+                    PhotoSelectOptions.isEditSupported = true;
+                    PhotoSelectOptions.isSearchSupported = true;
+
+                    let photoPicker = new photoAccessHelper.PhotoViewPicker();
+
+                    photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult: photoAccessHelper.PhotoSelectResult) => {
+                      console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
+                      this.submitUserPictureInput(PhotoSelectResult.photoUris[0])   // 已设置选择数量上限为1
+
+                    }).catch((err: BusinessError) => {
+                      console.error(`PhotoViewPicker.select failed with err: ${err.code}, ${err.message}`);
+                    });
+                  } catch (error) {
+                    let err: BusinessError = error as BusinessError;
+                    console.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`);
+                  }
+
                 } else if (this.selected_file_type_index == 1){
+
                   // TODO : 实现音频上传功能
+
+                  // 请在组件内获取context，确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
+                  let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+                  const audioViewPicker = new picker.AudioViewPicker(context);
+                  const audioSelectOptions = new picker.AudioSelectOptions();
+                  audioViewPicker.select(audioSelectOptions).then((audioSelectResult: Array<string>) => {
+                    //文件选择成功后，返回被选中音频的URI结果集。
+                    this.submitUserAudioInput(audioSelectResult[0])   // 已设置选择数量上限为1
+                    console.info('audioViewPicker.select to file succeed and uri is:' + audioSelectResult[0]);
+                  }).catch((err: BusinessError) => {
+                    console.error(`Invoke audioViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
+                  })
+
                 }
                 console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
               },

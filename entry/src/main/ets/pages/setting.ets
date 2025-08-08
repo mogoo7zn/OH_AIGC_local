@@ -37,7 +37,8 @@ if (!canIUse('SystemCapability.FileManagement.AppFileService.FolderAuthorization
   console.error('this api is not supported on this device');
 }
 
-async function persistPermissionExample() : Promise<boolean> {
+export async function Picker_persistPermission() : Promise<string> {
+  let uri : string = ''
   try {
     let DocumentSelectOptions = new picker.DocumentSelectOptions();
     DocumentSelectOptions.maxSelectNumber = 1;
@@ -51,7 +52,7 @@ async function persistPermissionExample() : Promise<boolean> {
     fileShare.persistPermission(policies).then(() => {
       console.info("persistPermission successfully");
       console.info("persisted uris:" + uris[0]);
-      CONST.model_uri = uris[0];
+      uri = uris[0];
     }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
       console.error("persistPermission failed with error message: " + err.message + ", error code: " + err.code);
       if (err.code == 13900001 && err.data) {
@@ -66,7 +67,7 @@ async function persistPermissionExample() : Promise<boolean> {
     let err: BusinessError = error as BusinessError;
     console.error(`persistPermission failed with err, Error code: ${err.code}, message: ${err.message}`);
   }
-  return true;
+  return uri;
 }
 
 
@@ -149,9 +150,40 @@ struct setting {
           .height(40)
           .width('100%')
           .onClick(()=>{
-            persistPermissionExample();
+             Picker_persistPermission()
+               .then((uri: string)=>{
+                  CONST.model_uri = uri;
+               });
             //activatePermissionExample(CONST.model_uri); // TODO : 传入参数须为持久化存储
             hilog.info(0, 'testTag', 'model_uri ( in setting ) :' + CONST.model_uri);
+          })
+
+        Text('配置prompt')
+          .fontSize(20)
+          .border({
+            width : {
+              top: 1,
+              bottom: 1
+            },
+            style : {
+              top: BorderStyle.Solid,
+              bottom: BorderStyle.Solid
+            },
+            color : Color.Black
+          })
+          .padding(5)
+          .height(40)
+          .width('100%')
+          .onClick(()=>{
+            this.getUIContext().getRouter().pushUrl({
+              url: 'pages/PromptSetting' // 目标url
+            }, router.RouterMode.Single, (err) => {
+              if (err) {
+                console.error(`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
+                return;
+              }
+              console.info('Invoke pushUrl succeeded.');
+            });
           })
       }
       .width('100%')
