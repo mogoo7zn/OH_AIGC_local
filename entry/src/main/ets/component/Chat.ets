@@ -8,6 +8,86 @@ import { lvMarkdownIn, lvTitle, lvText, lvLink, lvCode, lvQuote,  } from '@luvi/
 import { Constants as CONST} from '../common/Constants'
 import { UIContext } from '@kit.ArkUI';
 import { lvImage } from '@luvi/lv-markdown-in/src/main/ets/lv-markdown-in/lib/domain/LvImage';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Picker_persistPermission } from '../pages/setting'
+
+import { picker } from '@kit.CoreFileKit';
+import { fileShare } from '@kit.CoreFileKit';
+import ChatHistoryData from '../viewmodel/ChatHistoryData'
+import Rdb from '../common/database/Rdb'
+
+
+import {
+  PhotoPickerComponent,
+  PickerController,
+  PickerOptions,
+  DataType,
+  BaseItemInfo,
+  ItemInfo,
+  PhotoBrowserInfo,
+  ItemType,
+  ClickType,
+  MaxCountType,
+  PhotoBrowserRange,
+  PhotoBrowserUIElement,
+  ReminderMode,
+  ItemsDeletedCallback,
+  ExceedMaxSelectedCallback,
+  CurrentAlbumDeletedCallback,
+  photoAccessHelper,
+} from '@kit.MediaLibraryKit';
+//import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { fileIo } from '@kit.CoreFileKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { dataSharePredicates } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
+
+
+// class MediaDataHandler implements photoAccessHelper.MediaAssetDataHandler<ArrayBuffer> {
+//   onDataPrepared(data: ArrayBuffer) {
+//     if (data === undefined) {
+//       console.error('Error occurred when preparing data');
+//       return;
+//     }
+//     console.info('on image data prepared');
+//     // 应用自定义对资源数据的处理逻辑。
+//   }
+// }
+//
+// async function example(phAccessHelper: photoAccessHelper.PhotoAccessHelper, context: Context, uri: string) {
+//   let predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
+//   //let uri = 'file://media/Photo/1/IMG_datetime_0001/displayName.jpg' // 需保证此uri已存在。
+//   predicates.equalTo(photoAccessHelper.PhotoKeys.URI, uri.toString());
+//   let fetchOptions: photoAccessHelper.FetchOptions = {
+//     fetchColumns: [photoAccessHelper.PhotoKeys.TITLE],
+//     predicates: predicates
+//   };
+//
+//   try {
+//     let fetchResult: photoAccessHelper.FetchResult<photoAccessHelper.PhotoAsset> = await phAccessHelper.getAssets(fetchOptions);
+//     let photoAsset: photoAccessHelper.PhotoAsset = await fetchResult.getFirstObject();
+//     console.info('getAssets photoAsset.uri : ' + photoAsset.uri);
+//     // 获取属性值，以标题为例；对于非默认查询的属性，get前需要在fetchColumns中添加对应列名。
+//     console.info('title : ' + photoAsset.get(photoAccessHelper.PhotoKeys.TITLE));
+//     // 请求图片资源数据。
+//     let requestOptions: photoAccessHelper.RequestOptions = {
+//       deliveryMode: photoAccessHelper.DeliveryMode.HIGH_QUALITY_MODE,
+//     }
+//     await photoAccessHelper.MediaAssetManager.requestImageData(context, photoAsset, requestOptions, new MediaDataHandler());
+//     console.info('requestImageData successfully');
+//     fetchResult.close();
+//   } catch (err) {
+//     console.error('getAssets failed with err: ' + err);
+//   }
+// }
+
+
+
+
+let a = new ChatHistoryData()
+
+
+
 
 //设置各级标题字号
 lvTitle.setLevel1Title(18)
@@ -41,11 +121,13 @@ interface IChatComponent {
   //clearInput：指示是否清空输入框
   postMessage(msg: ChatMessage, clearInput?: boolean): void
 
+  postMessageStream(msg: ChatMessage, clearInput?: boolean): void
+
   deleteMessage() : void
 
   setTyping(isTyping: boolean): void
 
-  submitUserInput(userIputText: string): void
+  submitUserTextInput(userIputText: string): void
 
   changeMessage(msg:ChatMessage):void
 }
@@ -126,6 +208,97 @@ struct Chat {
   @Prop selected_model_name : string = '';
   @State hasSelect : boolean = false;
 
+  private file_types: string[] = ['图片', '音频'];
+  private selected_file_type_index: number | number[] = 0;
+  private selected_file_type: string = '';
+
+  // photoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+  // // photoSelectOptions.MIMEType : photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE; // 过滤选择媒体文件类型为IMAGE。
+  // // photoSelectOptions.maxSelectNumber = 5; // 选择媒体文件的最大数目。
+  //
+  // uris: Array<string> = [];
+  // photoViewPicker = new photoAccessHelper.PhotoViewPicker();
+
+
+  // // 组件初始化时设置参数信息。
+  // pickerOptions: PickerOptions = new PickerOptions();
+  //
+  // // 组件初始化完成后，可控制组件部分行为。
+  // @State pickerController: PickerController = new PickerController();
+  //
+  // // 已选择的图片。
+  // @State selectUris: Array<string> = new Array<string>();
+  //
+  // // 目前选择的图片。
+  // @State currentUri: string = '';
+  //
+  // // 是否显示大图。
+  // @State isBrowserShow: boolean = false;
+  //
+  // // 资源被选中回调，返回资源的信息，以及选中方式。
+  // private onItemClicked(itemInfo: ItemInfo, clickType: ClickType): boolean {
+  //   if (!itemInfo) {
+  //     return false;
+  //   }
+  //   let type: ItemType | undefined = itemInfo.itemType;
+  //   let uri: string | undefined = itemInfo.uri;
+  //   if (type === ItemType.CAMERA) {
+  //     // 点击相机item。
+  //     return true; // 返回true则拉起系统相机，若应用需要自行处理则返回false。
+  //   } else {
+  //     if (clickType === ClickType.SELECTED) {
+  //       // 应用做自己的业务处理。
+  //       if (uri) {
+  //         this.selectUris.push(uri);
+  //         this.pickerOptions.preselectedUris = [...this.selectUris];
+  //       }
+  //       return true; // 返回true则勾选，否则则不响应勾选。
+  //     } else {
+  //       if (uri) {
+  //         this.selectUris = this.selectUris.filter((item: string) => {
+  //           return item != uri;
+  //         });
+  //         this.pickerOptions.preselectedUris = [...this.selectUris];
+  //       }
+  //     }
+  //     return true;
+  //   }
+  // }
+  //
+  // // 进入大图的回调。
+  // private onEnterPhotoBrowser(photoBrowserInfo: PhotoBrowserInfo): boolean {
+  //   this.isBrowserShow = true;
+  //   return true;
+  // }
+  //
+  // // 退出大图的回调。
+  // private onExitPhotoBrowser(photoBrowserInfo: PhotoBrowserInfo): boolean {
+  //   this.isBrowserShow = false;
+  //   return true;
+  // }
+  //
+  // // 接收到该回调后，便可通过pickerController相关接口向picker发送数据，在此之前不生效。
+  // private onPickerControllerReady(): void {
+  // }
+  //
+  // // 大图左右滑动的回调。
+  // private onPhotoBrowserChanged(browserItemInfo: BaseItemInfo): boolean {
+  //   this.currentUri = browserItemInfo.uri ?? '';
+  //   return true;
+  // }
+  //
+  // // 已勾选图片被删除时的回调。
+  // private onSelectedItemsDeleted(baseItemInfos: Array<BaseItemInfo>): void {
+  // }
+  //
+  // // 超过最大选择数量再次点击时的回调。
+  // private onExceedMaxSelected(exceedMaxCountType: MaxCountType): void {
+  // }
+  //
+  // // 当前相册被删除时的回调。
+  // private onCurrentAlbumDeleted(): void {
+  // }
+
   @State messages: IChatDataSource = new ChatDataSource();
   @State userInput: string = ''
   @State isResponding: boolean = false
@@ -134,7 +307,7 @@ struct Chat {
   public onSendMessage?: (ctl: IChatComponent, message: ChatMessage) => void;
   public botAvatar: Resource = $r('app.media.chatbot')
   public userAvatar: Resource = $r('app.media.me')
-  public backIcon: Resource = $r('app.media.back')
+  public backIcon: Resource = $r('app.media.BackButton')
   public clearChatIcon: Resource = $r('app.media.clear')
   title: string = "ChatBot"
   public welcomeMessage: string = "主人好，我是智能助理，你的贴心小助手~"
@@ -152,14 +325,40 @@ struct Chat {
   // public controller?: ChatController
   public useMarkdown: boolean = true
 
-  submitUserInput(userIputText: string) {
-    this.userInput = userIputText
+  submitUserTextInput(userInputText: string) {
+    this.userInput = userInputText
     if (this.userInput && !this.isResponding) {
       if (this.onSendMessage) {
         this.isResponding = true
         this.onSendMessage(this, new ChatMessage({
           role: ChatRole.User,
           content: this.userInput
+        }))
+      }
+    }
+
+  }
+
+  submitUserPictureInput(userInputPictureUrl: string) {
+    if (!this.isResponding) {
+      if (this.onSendMessage) {
+        this.isResponding = true
+        this.onSendMessage(this, new ChatMessage({
+          role: ChatRole.User,
+          picurl: userInputPictureUrl
+        }))
+      }
+    }
+  }
+
+  submitUserAudioInput(userIputAudioUrl: string) {
+    if (!this.isResponding) {
+      if (this.onSendMessage) {
+        this.isResponding = true
+        this.onSendMessage(this, new ChatMessage({
+          role: ChatRole.User,
+          // picurl: userIputPictureUrl
+          // TODO : 增加音频类型，并实现播放组件。（ ? :是否需要持久化权限)
         }))
       }
     }
@@ -195,6 +394,22 @@ struct Chat {
   //         this.submitUserInput(this.userInput)
   //       })
   //   }
+  // }
+
+  // @Builder
+  // PickPhoto(){
+  //   PhotoPickerComponent({
+  //     pickerOptions: this.pickerOptions,
+  //     onItemClicked: (itemInfo: ItemInfo, clickType: ClickType): boolean => this.onItemClicked(itemInfo, clickType),
+  //     onEnterPhotoBrowser: (photoBrowserInfo: PhotoBrowserInfo): boolean => this.onEnterPhotoBrowser(photoBrowserInfo),
+  //     onExitPhotoBrowser: (photoBrowserInfo: PhotoBrowserInfo): boolean => this.onExitPhotoBrowser(photoBrowserInfo),
+  //     onPickerControllerReady: (): void => this.onPickerControllerReady(),
+  //     onPhotoBrowserChanged: (browserItemInfo: BaseItemInfo): boolean => this.onPhotoBrowserChanged(browserItemInfo),
+  //     onSelectedItemsDeleted: (BaseItemInfo: Array<BaseItemInfo>) => this.onSelectedItemsDeleted(BaseItemInfo),
+  //     onExceedMaxSelected: (exceedMaxCountType: MaxCountType) => this.onExceedMaxSelected(exceedMaxCountType),
+  //     onCurrentAlbumDeleted: () => this.onCurrentAlbumDeleted(),
+  //     pickerController: this.pickerController,
+  //   })
   // }
 
   public setDefaultMessage(role: ChatRole, content: string) {
@@ -254,9 +469,35 @@ struct Chat {
     this.isResponding = false
   }
 
+  postMessageStream(msg: ChatMessage, clearInput: boolean = true) {
+    let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+    if (!lastMsg.content) {
+      this.messages.updateData(this.messages.totalCount() - 1, msg)
+    } else {
+      this.messages.pushData(msg)
+    }
+    if (clearInput) {
+      this.userInput = ''
+    }
+    this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+    this.isResponding = false
+  }
+
   changeMessage(msg:ChatMessage){
+    hilog.info(0, 'testTag', 'Updating message:' + msg.content);
+    console.info("Updating message:", msg.content);
     console.info("test:msg=%s,c=%s",msg.content,this.messages.getString(this.messages.totalCount()-1));
     this.messages.updateData(this.messages.totalCount()-1 , msg)
+
+    // this.messages.removeData(this.messages.totalCount()-1)
+    // this.messages.pushData(msg)
+
+    // let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
+    // if (!lastMsg.content) {
+    //   this.messages.updateData(this.messages.totalCount() - 1, msg)
+    // } else {
+    //   this.messages.pushData(msg)
+    // }
     console.info("test:msg=%s",msg.content);
     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
     this.userInput = ''
@@ -267,13 +508,24 @@ struct Chat {
     if (this.controller) {
       this.controller.chatCtrl = this
     }
-    this.submitUserInput.bind(this)
+    this.submitUserTextInput.bind(this)
     this.postMessage.bind(this)
     this.setTyping.bind(this)
     this.changeMessage.bind(this)
     if (this.welcomeMessage) {
       this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
     }
+
+    // // 设置picker宫格页数据类型
+    // this.pickerOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE // 图片和照片都显示。
+    // // 最大选择数量。
+    // this.pickerOptions.maxSelectNumber = 1;
+    // // 超出最大选择数量时。
+    // this.pickerOptions.maxSelectedReminderMode = ReminderMode.TOAST;
+    // // 是否展示搜索框，默认false。
+    // this.pickerOptions.isSearchSupported = true;
+    // // 是否支持拍照，默认false。
+    // this.pickerOptions.isPhotoTakingSupported = true;
   }
 
   build() {
@@ -288,22 +540,72 @@ struct Chat {
               middle: { anchor: '__container__', align: HorizontalAlign.Center }
             })
 
-          Button() {
-            Image(this.clearChatIcon).width(30).height(30)
+          Button({
+            type: ButtonType.Circle
+          }){
+            Image($r('app.media.setting_button')).width(30).height(30)
           }
+          .backgroundColor(Color.White)
           .alignRules({
             center: { anchor: '__container__', align: VerticalAlign.Center },
-            right: { anchor: '__container__', align: HorizontalAlign.End }
+            right: {anchor: 'newchatBtn', align: HorizontalAlign.Start },
+          })
+          .id('settingBtn')
+          .margin({ right: 10 })
+          // .offset({ x : -10 })
+          .onClick(()=>{
+            this.getUIContext().getRouter().pushUrl({
+              url: 'pages/setting' // 目标url
+            }, router.RouterMode.Single, (err) => {
+              if (err) {
+                console.error(`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
+                return;
+              }
+              console.info('Invoke pushUrl succeeded.');
+            });
+          })
+
+          // Button() {
+          //   Image(this.clearChatIcon).width(30).height(30)
+          // }
+          // .alignRules({
+          //   center: { anchor: '__container__', align: VerticalAlign.Center },
+          //   right: { anchor: '__container__', align: HorizontalAlign.End },
+          // })
+          // .margin({ right: 10 })
+          // .id('clearBtn')
+          // .onClick((evt) => {
+          //   if (this.onClear) {
+          //     this.onClear(evt);
+          //   }
+          //   this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
+          // })
+          // .backgroundColor('#0fff')
+
+          Button(){
+            Image($r('app.media.NewchatButton')).width(30).height(30)
+          }
+          .backgroundColor(Color.White)
+          .alignRules({
+            center: { anchor: '__container__', align: VerticalAlign.Center },
+            right: { anchor: '__container__', align: HorizontalAlign.End },
           })
           .margin({ right: 10 })
-          .id('clearBtn')
-          .onClick((evt) => {
-            if (this.onClear) {
-              this.onClear(evt);
-            }
-            this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
+          .id('newchatBtn')
+          //.offset({ x : 40 + 10 })
+          .onClick(()=>{
+            this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage);
+
+            // this.getUIContext().getRouter().replaceUrl({
+            //   url: 'pages/Index' // 目标url
+            // }, router.RouterMode.Standard, (err) => {
+            //   if (err) {
+            //     console.error(`Invoke replaceUrl failed, code is ${err.code}, message is ${err.message}`);
+            //     return;
+            //   }
+            //   console.info('Invoke replaceUrl succeeded.');
+            // });
           })
-          .backgroundColor('#0fff')
 
           // if (this.needBackButton) {
           //   Button() {
@@ -465,6 +767,79 @@ struct Chat {
               .alignItems(VerticalAlign.Top)
               .padding(10)
               .width('100%')
+
+
+              /*
+               *
+               *               Flex({ direction: FlexDirection.Row }) {
+                Row() {
+                  Button() {
+                    Image(this.botAvatar)
+                      .width(40)
+                      .height(40)
+                  }
+                  .type(ButtonType.Circle)
+                  .width(40)
+                  .height(40)
+                  .backgroundColor(Color.Transparent)
+                }
+
+                Row(){
+                  Column() {
+                    if (this.isResponding && !item.content?.length) {
+                      LoadingProgress()
+                        .color(this.botMessageTextColor)
+                        .width(40)
+                        .height(40)
+                    } else {
+                      if (item.picurl) {
+                        Image(item.picurl)
+
+                      } else {
+                        if (this.useMarkdown) {
+                          lvMarkdownIn({
+                            text: item.content,
+                            textStyle: {
+                              textSize: this.messageFontSize,
+                              textColor: this.userMessageTextColor as string,
+                              textMarkBackground: '#00000000'
+                            }
+                          })
+                        } else {
+                          Text(item.content)
+                            .fontSize(this.messageFontSize)
+                            .textAlign(TextAlign.Start)
+                            .width('100%')
+                            .fontColor(this.botMessageTextColor)
+                        }
+                      }
+                    }
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .backgroundColor($r('app.color.botMessageBackgroundColor'))
+                  .layoutWeight(1)
+                  //.height(80)
+                  .padding(15)
+                  .margin({ left: 15 })
+                  .borderRadius(5)
+                  .shadow({
+                    radius: 5,        // 阴影模糊半径
+                    color: Color.Gray, // 阴影颜色
+                    offsetX: 0,        // X轴偏移
+                    offsetY: 4         // Y轴偏移（向下偏移模拟光照）
+                  })
+
+                  Blank()
+                    .width(55)
+                }
+                // .alignItems(VerticalAlign.Top)
+                // .padding(10)
+                // .width('100%')
+              }
+              // .height(70)
+              // .width('90%')
+              // .padding(10)
+              // .backgroundColor('#AFEEEE')*/
             }
 
           }
@@ -515,6 +890,8 @@ struct Chat {
                 this.selected_model_name = value.value as string;
                 this.hasSelect = true;
                 console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
+                let context = this.getUIContext().getHostContext() as common.UIAbilityContext; // 请确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
+                let documentPicker = new picker.DocumentViewPicker(context);
               },
               onCancel: () => {
                 this.hasSelect = false;
@@ -567,23 +944,104 @@ struct Chat {
           .width('30')
           .margin(5)
           .onClick(() => {
-            ActionSheet.show({
-              title: '选择您要上传的文件类型',
-              message: '',
-              sheets: [
-                { title: '图片', action: () => { } },
-                { title: '音频', action: () => {} }
-              ],
-              confirm: {
-                value: '取消',
-                action: () => console.log('已取消')
+            this.getUIContext().showTextPickerDialog({
+              range: this.file_types,
+              selected: this.selected_file_type_index,
+              value: this.selected_file_type,
+              defaultPickerItemHeight: 40,
+              alignment: DialogAlignment.Center,
+              offset: { dx: 0, dy: 0 },
+              canLoop: false,
+              onAccept: (value: TextPickerResult) => {
+                // 设置select为按下确定按钮时候的选中项index，这样当弹窗再次弹出时显示选中的是上一次确定的选项
+                this.selected_file_type_index = value.index;
+                console.log(this.selected_file_type + '');
+                // 点击确定后，被选到的文本数据展示到页面
+                this.selected_file_type = value.value as string;
+                // 若之后要添加更多的文件类型，此处改用switch-case即可
+                if(this.selected_file_type_index == 0){
+
+                  try {
+                    let PhotoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+                    PhotoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+                    PhotoSelectOptions.maxSelectNumber = 1;
+                    PhotoSelectOptions.isEditSupported = true;
+                    PhotoSelectOptions.isSearchSupported = true;
+
+                    let photoPicker = new photoAccessHelper.PhotoViewPicker();
+
+                    photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult: photoAccessHelper.PhotoSelectResult) => {
+                      console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
+                      this.submitUserPictureInput(PhotoSelectResult.photoUris[0])   // 已设置选择数量上限为1
+
+                    }).catch((err: BusinessError) => {
+                      console.error(`PhotoViewPicker.select failed with err: ${err.code}, ${err.message}`);
+                    });
+                  } catch (error) {
+                    let err: BusinessError = error as BusinessError;
+                    console.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`);
+                  }
+
+                } else if (this.selected_file_type_index == 1){
+
+                  // TODO : 实现音频上传功能
+
+                  // 请在组件内获取context，确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
+                  let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+                  const audioViewPicker = new picker.AudioViewPicker(context);
+                  const audioSelectOptions = new picker.AudioSelectOptions();
+                  audioViewPicker.select(audioSelectOptions).then((audioSelectResult: Array<string>) => {
+                    //文件选择成功后，返回被选中音频的URI结果集。
+                    this.submitUserAudioInput(audioSelectResult[0])   // 已设置选择数量上限为1
+                    console.info('audioViewPicker.select to file succeed and uri is:' + audioSelectResult[0]);
+                  }).catch((err: BusinessError) => {
+                    console.error(`Invoke audioViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
+                  })
+
+                }
+                console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
+              },
+              onCancel: () => {
+                console.info("TextPickerDialog:onCancel()");
+              },
+              onChange: (value: TextPickerResult) => {
+                console.info("TextPickerDialog:onChange()" + JSON.stringify(value));
+              },
+              onScrollStop: (value: TextPickerResult) => {
+                console.info("TextPickerDialog:onScrollStop()" + JSON.stringify(value));
+              },
+              onDidAppear: () => {
+                console.info("TextPickerDialog:onDidAppear()");
+              },
+              onDidDisappear: () => {
+                console.info("TextPickerDialog:onDidDisappear()");
+              },
+              onWillAppear: () => {
+                console.info("TextPickerDialog:onWillAppear()");
+              },
+              onWillDisappear: () => {
+                console.info("TextPickerDialog:onWillDisappear()");
               }
-            })
+            });
           })
+          // .onClick(() => {
+          //   ActionSheet.show({
+          //     title: '选择您要上传的文件类型',
+          //     message: '',
+          //     sheets: [
+          //       { title: '图片', action: () => { } },
+          //       { title: '音频', action: () => {} }
+          //     ],
+          //     confirm: {
+          //       value: '取消',
+          //       action: () => console.log('已取消')
+          //     }
+          //   })
+          // })
         }
         .alignItems(VerticalAlign.Center) // 垂直居中对齐
         .width('100%')
-        .layoutWeight(1)
+        .height(50)
         //.margin(5)
 
         Row(){
@@ -601,7 +1059,7 @@ struct Chat {
             })
             .onSubmit(() => {
               if(this.hasSelect){
-                this.submitUserInput(this.userInput)
+                this.submitUserTextInput(this.userInput)
                 //this.sendMessage(this.chatController.chatCtrl,this.userInput)
                 this.Textcontroller.stopEditing()
                 this.Textcontroller.deleteText()
@@ -672,7 +1130,7 @@ struct Chat {
           .backgroundColor($r('app.color.sendbutton_background'))
           .onClick(() => {
             if(this.hasSelect){
-              this.submitUserInput(this.userInput)
+              this.submitUserTextInput(this.userInput)
               //this.sendMessage(this.chatController.chatCtrl,this.userInput)
               this.Textcontroller.stopEditing()
               this.Textcontroller.deleteText()
@@ -721,7 +1179,7 @@ struct Chat {
             }
           })
         }
-        .layoutWeight(1)
+        .height(75)
         .width('100%')
 
       }
@@ -730,7 +1188,7 @@ struct Chat {
         //.borderColor('#999')
         .padding(5)
         .width('100%')
-        .height(150)
+        .height(120)
     }
     .backgroundColor(Color.White)
     .height('100%')

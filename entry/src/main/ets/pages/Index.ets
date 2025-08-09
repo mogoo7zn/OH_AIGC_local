@@ -8,8 +8,8 @@ import { MarginType } from '@kit.ArkUI';
 import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { fileIo } from '@kit.CoreFileKit';
 
-const displayClass = display.getDefaultDisplaySync();
 
 @Entry
 @Component
@@ -17,6 +17,7 @@ struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
+  //@Consume('modeluri') model_uri : string
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
@@ -84,22 +85,63 @@ struct CustomInput {
       //3秒后发送chatbot响应消息
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-          const fileName = this.selected_model_name
-          const fileTest = getContext().resourceDir+'/' + fileName;
+          // TODO : 实现读取用户文件系统中的模型文件
+          // const fileName = this.selected_model_name
+          // const fileTest = getContext().resourceDir+'/' + fileName;
+          //const fileTest = CONST.model_uri;
+          const fileTest = 'file://docs/storage/Users/currentUser/Download/qwen2.5-3b-instruct-q8_0.gguf'
+          let file = fileIo.openSync(fileTest, fileIo.OpenMode.READ_ONLY);
+          console.info("test :" + file.path )
+          hilog.info(0, 'testTag', 'model_uri:' + fileTest);
+          hilog.info(0, 'testTag', 'model_path:' + file.path);
           hilog.info(0, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
-          testNapi.load_module(fileTest);
+          testNapi.load_module(file.path);
+
+        // 保存流式输出的累积消息
+        let accumulatedContent = '';
+        let pre_token: string;
+        let token_diff: string;
+
           testNapi.inference_start(message.content,
             (token:string)=>{
-                ctl.deleteMessage()
-                ctl.postMessage(new ChatMessage({
-                  role: ChatRole.Assistant,
-                  content: token
-                }))
+              // TODO : 实现流式输出显示
+              ctl.deleteMessage()
+              ctl.postMessage(new ChatMessage({
+                role: ChatRole.Assistant,
+                content: token
+              }))
+
+              // 累加token
+              // accumulatedContent += token;
+
+              //token_diff = subtractString(token, pre_token);
+
+              // let newMsg = new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: token
+              // });
+              // hilog.info(0, 'testTag', 'token:' + token + '\n');
+              //
+              //
+              // // 更新消息（而不是删除后重新发送）
+              // ctl.changeMessage(newMsg);
+
+              // ctl.changeMessage(new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: token
+              // }))
+              // ctl.postMessage(new ChatMessage({
+              //   role: ChatRole.Assistant,
+              //   content: pre_token
+              // }))
+
+              // pre_token = token;
             })
       } catch (err){
         console.error("test:error,%s",err);
       }
   }
+
   // aboutToAppear() {
   //   const params = router.getParams(); // 获取传递过来的参数对象
   //   if(params) {

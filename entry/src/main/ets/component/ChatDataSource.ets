@@ -70,6 +70,7 @@ class ChatDataSource implements IChatDataSource {
 
   // 通知LazyForEach组件在index对应索引处数据有变化，需要重建该子组件
   notifyDataChange(index: number): void {
+    console.info("in notifyDataChange test:size=%d, index=%d, data=%c",this.originDataArray.length,index,this.originDataArray[index].content)
     this.listeners.forEach(listener => {
       listener.onDataChange(index);
     })
@@ -93,7 +94,7 @@ class ChatDataSource implements IChatDataSource {
   }
 
   public updateData(index: number, data: IChatMessage): void {
-    console.info("test:size=%d,index=%d,data=%s",this.originDataArray.length,index,this.originDataArray[index].content)
+    console.info("( in updateData ) test:size=%d,index=%d,data=%s",this.originDataArray.length,index,this.originDataArray[index].content)
     if (this.originDataArray.length <= index) {
       this.originDataArray.push(data)
     }

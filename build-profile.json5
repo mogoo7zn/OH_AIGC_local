@@ -2,25 +2,25 @@
   "app": {
     "signingConfigs": [
       {
-        "name": "default",
+        "name": "AIGCLOC",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\szx\\.ohos\\config\\default_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.cer",
+          "certpath": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BE0F5618FD3970EF55B20E52D6C226DDCCB5C62AE4FE8B6E6164AAAA0FD928C03EA435CF9048B47",
-          "profile": "C:\\Users\\szx\\.ohos\\config\\default_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p7b",
+          "keyPassword": "0000001B7A473D489E46A4B1D780CD5248F3F4FC47BFD8FA6DC1EDA6BBFAFB7BF3897DFD7B924268515D04",
+          "profile": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\szx\\.ohos\\config\\default_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p12",
-          "storePassword": "0000001B5982F9A280A69E759B1194207CB65E64B559305438B7026FD1EA1DC3F4C6030C6DED692D628AC6"
+          "storeFile": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p12",
+          "storePassword": "0000001BE6273F1B2422E09322B7A23D025118EF16D8E37890CDBC7ACA7F8B0FBB75B0B18DE340CB4D8F1D"
         }
       }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
-        "targetSdkVersion": "5.0.5(17)",
-        "compatibleSdkVersion": "5.0.5(17)",
+        "signingConfig": "AIGCLOC",
+        "targetSdkVersion": "5.1.0(18)",
+        "compatibleSdkVersion": "5.0.3(15)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {

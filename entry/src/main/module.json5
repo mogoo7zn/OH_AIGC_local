@@ -46,6 +46,18 @@
           }
         ]
       }
+    ],
+    "requestPermissions":[
+      {
+        "name" : "ohos.permission.FILE_ACCESS_PERSIST",
+        "reason": "$string:Permission_Reason",
+        "usedScene": {
+          "abilities": [
+            "FormAbility"
+          ],
+          "when":"inuse"
+        }
+      }
     ]
   }
 }
