@@ -13,6 +13,8 @@ import { Picker_persistPermission } from '../pages/setting'
 
 import { picker } from '@kit.CoreFileKit';
 import { fileShare } from '@kit.CoreFileKit';
+import ChatHistoryData from '../viewmodel/ChatHistoryData'
+import Rdb from '../common/database/Rdb'
 
 
 import {
@@ -81,6 +83,8 @@ import { common } from '@kit.AbilityKit';
 
 
 
+
+let a = new ChatHistoryData()
 
 
 
@@ -332,6 +336,7 @@ struct Chat {
         }))
       }
     }
+
   }
 
   submitUserPictureInput(userInputPictureUrl: string) {
@@ -543,9 +548,11 @@ struct Chat {
           .backgroundColor(Color.White)
           .alignRules({
             center: { anchor: '__container__', align: VerticalAlign.Center },
-            right: {anchor: 'clearBtn', align: HorizontalAlign.Start },
+            right: {anchor: 'newchatBtn', align: HorizontalAlign.Start },
           })
-          .offset({ x : -5 })
+          .id('settingBtn')
+          .margin({ right: 10 })
+          // .offset({ x : -10 })
           .onClick(()=>{
             this.getUIContext().getRouter().pushUrl({
               url: 'pages/setting' // 目标url
@@ -558,22 +565,47 @@ struct Chat {
             });
           })
 
-          Button() {
-            Image(this.clearChatIcon).width(30).height(30)
+          // Button() {
+          //   Image(this.clearChatIcon).width(30).height(30)
+          // }
+          // .alignRules({
+          //   center: { anchor: '__container__', align: VerticalAlign.Center },
+          //   right: { anchor: '__container__', align: HorizontalAlign.End },
+          // })
+          // .margin({ right: 10 })
+          // .id('clearBtn')
+          // .onClick((evt) => {
+          //   if (this.onClear) {
+          //     this.onClear(evt);
+          //   }
+          //   this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
+          // })
+          // .backgroundColor('#0fff')
+
+          Button(){
+            Image($r('app.media.NewchatButton')).width(30).height(30)
           }
+          .backgroundColor(Color.White)
           .alignRules({
             center: { anchor: '__container__', align: VerticalAlign.Center },
             right: { anchor: '__container__', align: HorizontalAlign.End },
           })
           .margin({ right: 10 })
-          .id('clearBtn')
-          .onClick((evt) => {
-            if (this.onClear) {
-              this.onClear(evt);
-            }
-            this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
+          .id('newchatBtn')
+          //.offset({ x : 40 + 10 })
+          .onClick(()=>{
+            this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage);
+
+            // this.getUIContext().getRouter().replaceUrl({
+            //   url: 'pages/Index' // 目标url
+            // }, router.RouterMode.Standard, (err) => {
+            //   if (err) {
+            //     console.error(`Invoke replaceUrl failed, code is ${err.code}, message is ${err.message}`);
+            //     return;
+            //   }
+            //   console.info('Invoke replaceUrl succeeded.');
+            // });
           })
-          .backgroundColor('#0fff')
 
           // if (this.needBackButton) {
           //   Button() {
@@ -1009,7 +1041,7 @@ struct Chat {
         }
         .alignItems(VerticalAlign.Center) // 垂直居中对齐
         .width('100%')
-        .layoutWeight(1)
+        .height(50)
         //.margin(5)
 
         Row(){
@@ -1147,7 +1179,7 @@ struct Chat {
             }
           })
         }
-        .layoutWeight(1)
+        .height(75)
         .width('100%')
 
       }
@@ -1156,7 +1188,7 @@ struct Chat {
         //.borderColor('#999')
         .padding(5)
         .width('100%')
-        .height(150)
+        .height(120)
     }
     .backgroundColor(Color.White)
     .height('100%')

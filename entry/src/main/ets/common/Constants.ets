@@ -10,11 +10,11 @@ export class Constants {
 
   static getTokenizer(): relationalStore.Tokenizer | undefined {
     let tokenType = relationalStore.Tokenizer.ICU_TOKENIZER;
-    let tokenTypeSupported = relationalStore.isTokenizerSupported(tokenType);
-    if (!tokenTypeSupported) {
-      console.error(`ICU_TOKENIZER 在该平台不支持`);
-      return undefined;
-    }
+    // let tokenTypeSupported = relationalStore.isTokenizerSupported(tokenType);
+    // if (!tokenTypeSupported) {
+    //   console.error(`ICU_TOKENIZER 在该平台不支持`);
+    //   return undefined;
+    // }
     return tokenType;
   }
 
