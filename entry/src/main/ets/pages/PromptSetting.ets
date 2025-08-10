@@ -7,13 +7,14 @@ struct PromptSetting {
   build() {
     RelativeContainer() {
       Button(){
-        Image($r('app.media.BackButton')).width(40).height(40)
+        Image($r('app.media.BackButton')).width(35).height(35)
       }
       .alignRules({
         center: { anchor: '__container__', align: VerticalAlign.Top },
         left: { anchor: '__container__', align: HorizontalAlign.Start },
       })
       .padding(5)
+      .margin(5)
       .offset({
         y: 25,
         x: 5,
@@ -25,20 +26,25 @@ struct PromptSetting {
       })
 
       TextArea({
-        placeholder: 'Please enter your prompt here ... ',
+        placeholder: 'Please enter your prompt here ... \n（默认：······）',
         controller: this.controller
       })
         .alignRules({
           top: { anchor: 'back button', align: VerticalAlign.Bottom },
           left: { anchor: '__container__', align: HorizontalAlign.Start },
         })
-        .align(Alignment.Center)
+        .offset({y:10})
         .placeholderFont({ size: 16, weight: 400 })
         .width('90%')
-        .height(100)
+        .height(200)
+        .padding(5)
         .margin(20)
-        .fontSize(14)
+        .border({
+          radius: 8
+        })
+        .fontSize(16)
         .fontColor(Color.Black)
+        .caretColor(Color.Black)
         .backgroundColor($r('app.color.input_background'))
         .wordBreak(WordBreak.BREAK_WORD)
         .maxLength(128)

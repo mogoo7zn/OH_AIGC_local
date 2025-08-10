@@ -106,7 +106,7 @@ struct setting {
   build() {
     RelativeContainer(){
       Button(){
-        Image($r('app.media.BackButton')).width(40).height(40)
+        Image($r('app.media.BackButton')).width(35).height(35)
       }
       .alignRules({
         center: { anchor: '__container__', align: VerticalAlign.Top },
@@ -146,8 +146,8 @@ struct setting {
             },
             color : Color.Black
           })
-          .padding(5)
-          .height(40)
+          .padding(10)
+          .height(50)
           .width('100%')
           .onClick(()=>{
              Picker_persistPermission()
@@ -162,7 +162,6 @@ struct setting {
           .fontSize(20)
           .border({
             width : {
-              top: 1,
               bottom: 1
             },
             style : {
@@ -171,8 +170,8 @@ struct setting {
             },
             color : Color.Black
           })
-          .padding(5)
-          .height(40)
+          .padding(10)
+          .height(50)
           .width('100%')
           .onClick(()=>{
             this.getUIContext().getRouter().pushUrl({

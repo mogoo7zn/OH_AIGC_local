@@ -19,12 +19,13 @@ export struct SidebarComponent {
 
   // 数据源
   // TODO : 历史对话的标题借助大模型进行主题总结
-  private items: SidebarItem[] = [
-    new SidebarItem('1', '历史对话1'),
-    new SidebarItem('2', '历史对话2'),
-    new SidebarItem('3', '历史对话3'),
-    new SidebarItem('4', '历史对话4')
-  ]
+  private items: SidebarItem[] = []
+
+  private PushSomeItem(num: number){
+    for(let i=0;i<num;i++){
+      this.items.push(new SidebarItem(`${i}`,`历史对话${i}`))
+    }
+  }
 
   @Builder itemEnd() {
     Row() {
@@ -50,6 +51,10 @@ export struct SidebarComponent {
     }
     .padding("4vp")
     .justifyContent(FlexAlign.SpaceEvenly)
+  }
+
+  aboutToAppear(): void {
+    this.PushSomeItem(20);
   }
 
   build() {
@@ -98,6 +103,10 @@ export struct SidebarComponent {
             .borderRadius(10)
             .backgroundColor(Color.White)
         }
+        .padding({
+          right: 5,
+          left: 5
+        })
         .transition({ type: TransitionType.Delete, opacity: 0 })
         .swipeAction({
           end: {

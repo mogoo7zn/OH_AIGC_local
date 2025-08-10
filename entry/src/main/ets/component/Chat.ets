@@ -595,6 +595,7 @@ struct Chat {
           //.offset({ x : 40 + 10 })
           .onClick(()=>{
             this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage);
+            this.getUIContext().getFocusController().requestFocus('TextArea')
 
             // this.getUIContext().getRouter().replaceUrl({
             //   url: 'pages/Index' // 目标url
@@ -633,7 +634,7 @@ struct Chat {
             if (item.role == ChatRole.User.toString()) {
               Row() {
                 Blank()
-                  .width(55)
+                  .width(80)
                 Column() {
                   if (item.picurl) {
                     Image(item.picurl)
@@ -661,7 +662,12 @@ struct Chat {
                 .backgroundColor($r('app.color.userMessageBackgroundColor'))
                 .layoutWeight(1)
                 //.height(80)
-                .padding(15)
+                .padding({
+                  left: 10,
+                  right: 5,
+                  top:7,
+                  bottom:10
+                })
                 .margin({ right: 15 })
                 .borderRadius(5)
                 // .border({
@@ -684,12 +690,12 @@ struct Chat {
                 //     left: '#f0f0f0'
                 //   }
                 // })
-                .shadow({
-                  radius: 5,        // 阴影模糊半径
-                  color: Color.Gray, // 阴影颜色
-                  offsetX: 0,        // X轴偏移
-                  offsetY: 4         // Y轴偏移（向下偏移模拟光照）
-                })
+                // .shadow({
+                //   radius: 5,        // 阴影模糊半径
+                //   color: Color.Gray, // 阴影颜色
+                //   offsetX: 0,        // X轴偏移
+                //   offsetY: 4         // Y轴偏移（向下偏移模拟光照）
+                // })
 
                 Button() {
                   Image(this.userAvatar)
@@ -700,6 +706,7 @@ struct Chat {
                 .backgroundColor(Color.Transparent)
                 .width(40)
                 .height(40)
+                .offset({y:5})
               }
               .justifyContent(FlexAlign.End)
               .padding(10)
@@ -715,6 +722,7 @@ struct Chat {
                 .type(ButtonType.Circle)
                 .width(40)
                 .height(40)
+                .offset({y:5})
                 .backgroundColor(Color.Transparent)
 
                 Column() {
@@ -748,21 +756,22 @@ struct Chat {
                   }
                 }
                 .alignItems(HorizontalAlign.Start)
-                .backgroundColor($r('app.color.botMessageBackgroundColor'))
+                //.backgroundColor($r('app.color.botMessageBackgroundColor'))
+                .backgroundColor(Color.White)
                 .layoutWeight(1)
                 //.height(80)
-                .padding(15)
+                .padding(10)
                 .margin({ left: 15 })
                 .borderRadius(5)
-                .shadow({
-                  radius: 5,        // 阴影模糊半径
-                  color: Color.Gray, // 阴影颜色
-                  offsetX: 0,        // X轴偏移
-                  offsetY: 4         // Y轴偏移（向下偏移模拟光照）
-                })
+                // .shadow({
+                //   radius: 5,        // 阴影模糊半径
+                //   color: Color.Gray, // 阴影颜色
+                //   offsetX: 0,        // X轴偏移
+                //   offsetY: 4         // Y轴偏移（向下偏移模拟光照）
+                // })
 
                 Blank()
-                  .width(55)
+                  .width(15)
               }
               .alignItems(VerticalAlign.Top)
               .padding(10)
@@ -1049,11 +1058,18 @@ struct Chat {
             placeholder: CONST.InputPropmt,
             controller: this.Textcontroller
           })
+            .id('TextArea')
             .enterKeyType(EnterKeyType.Send)
             .fontColor(Color.Black)
             .backgroundColor($r('app.color.input_background'))
             .width('75%')
             .flexGrow(1)
+            .caretColor(Color.Black)
+            .fontSize(14)
+            .wordBreak(WordBreak.BREAK_ALL)
+            .height('100%')
+            .margin({ top: 0, right: 5, bottom: 0, left: 5 })
+            //.padding({ top: 5, right: 5, bottom: 0, left: 5 })
             .onChange((val) => {
               this.userInput = val
             })
@@ -1115,12 +1131,7 @@ struct Chat {
             //     color: Color.Gray
             //   }
             // })
-            .caretColor(Color.Black)
-            .fontSize(12)
-            .wordBreak(WordBreak.BREAK_ALL)
-            .height('100%')
-            .margin({ top: 0, right: 5, bottom: 0, left: 5 })
-          //.padding({ top: 5, right: 5, bottom: 0, left: 5 })
+
 
           Button(){
             Image($r('app.media.SendButton')).width(30).height(30)

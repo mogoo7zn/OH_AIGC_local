@@ -42,7 +42,7 @@ struct CustomInput {
       //内容区视图
         Column() {
             Chat({
-              title: 'demo chatbot',
+              title: 'OpenHarmony AI',
               welcomeMessage: '我是你的本地AI bot',
               botMessageTextColor: Color.Black,
               userMessageTextColor: Color.Black,

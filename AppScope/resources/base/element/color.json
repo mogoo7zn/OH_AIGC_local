@@ -10,7 +10,23 @@
       },
       {
         "name": "sidebar_background",
-        "value": "#D2DEE1"
+        "value": "#d7f0f9"
+      },
+      {
+        "name": "start_window_background",
+        "value": "#FFFFFF"
+      },
+      {
+        "name": "sendbutton_background",
+        "value": "#91DEE9"
+      },
+      {
+        "name": "userMessageBackgroundColor",
+        "value": "#E3F8F6"
+      },
+      {
+        "name": "botMessageBackgroundColor",
+        "value": "#E4E3F8"
       }
     ]
   }

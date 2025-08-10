@@ -5,13 +5,13 @@
         "name": "AIGCLOC",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.cer",
+          "certpath": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B7A473D489E46A4B1D780CD5248F3F4FC47BFD8FA6DC1EDA6BBFAFB7BF3897DFD7B924268515D04",
-          "profile": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p7b",
+          "keyPassword": "0000001B5F145FDA18FF6833E038BBAB855F26175D0A993B5D835221C734B4260E5C0D6E66914770F58003",
+          "profile": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\szx\\.ohos\\config\\AIGCLOC_OH_AIGC_local_ItrebJJct38GXyPPFaAzP6ro_grhkdG3fxTUv4UDP_s=.p12",
-          "storePassword": "0000001BE6273F1B2422E09322B7A23D025118EF16D8E37890CDBC7ACA7F8B0FBB75B0B18DE340CB4D8F1D"
+          "storeFile": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.p12",
+          "storePassword": "0000001BB12BFDD26C3185C415CBB7AC76DF80A11D0EB4CFBEB55B977F35D6EDCE644C8ABD3A608561DB5E"
         }
       }
     ],
