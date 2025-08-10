@@ -1,11 +1,11 @@
 import { relationalStore } from '@kit.ArkData';
-import { ChatHistoryTable } from '../viewmodel/ConstantsInterface'
+import { ChatHistoryTable, SessionTable, ModelPathTable } from '../viewmodel/ConstantsInterface'
 
 export class Constants {
   static InputPropmt = 'Chat with your local AI now ...'
 
-  static readonly DATABASE_NAME: string = 'ChatHistory.db';
-  static readonly DATABASE_VERSION: number = 1;
+  static readonly DatabaseName: string = 'ChatHistory.db';
+  static readonly DatabaseVersion: number = 1;
 
   static getTokenizer(): relationalStore.Tokenizer | undefined {
     let tokenType = relationalStore.Tokenizer.ICU_TOKENIZER;
@@ -18,24 +18,45 @@ export class Constants {
   }
 
   /**
-   * Rdb database config.
+   * Rdb database config
    */
-  static readonly STORE_CONFIG: relationalStore.StoreConfig = {
-    name: Constants.DATABASE_NAME,
+  static readonly StoreConfig: relationalStore.StoreConfig = {
+    name: Constants.DatabaseName,
     securityLevel: relationalStore.SecurityLevel.S1,
     encrypt: false,
     isReadOnly: false,
     tokenizer: Constants.getTokenizer()
   };
   /**
-   * ChatHistory table config.
+   * ChatHistory table config
    */
-  static readonly CHAT_HISTORY_TABLE: ChatHistoryTable = {
+  static readonly ChatHistoryTable: ChatHistoryTable = {
     tableName: 'ChatHistoryTable',
-    sqlCreate: 'CREATE TABLE IF NOT EXISTS CHAT_HISTORY_TABLE (ID INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-      'SESSION_ID INTEGER, CONVERSATION_ID INTEGER, USER_INPUT TEXT, BOT_OUTPUT TEXT, MODEL_NAME TEXT)',
-    columns: ['ID', 'SESSION_ID', 'CONVERSATION_ID', 'USER_INPUT', 'BOT_OUTPUT', 'MODEL_NAME']
+    sqlCreate: 'CREATE TABLE IF NOT EXISTS ChatHistoryTable (id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+      'sessionId INTEGER, conversationId INTEGER, userInput TEXT, botOutput TEXT)',
+    columns: ['id', 'sessionId', 'conversationId', 'userInput', 'botOutput']
   };
+
+  /**
+   * Session table config
+   */
+  static readonly SessionTable: SessionTable = {
+    tableName: 'SessionTable',
+    sqlCreate: 'CREATE TABLE IF NOT EXISTS SessionTable (id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+      'sessionName TEXT, prompt TEXT, modelName TEXT)',
+    columns: ['id', 'sessionName', 'prompt', 'modelName']
+  }
+
+  /**
+   * ModelPath table config
+   */
+  static readonly ModelPathTable: ModelPathTable = {
+    tableName: 'ModelPathTable',
+    sqlCreate: 'CREATE TABLE IF NOT EXISTS ModelPathTable (id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+      'modelFileUrl TEXT, modelName TEXT)',
+    columns: ['id', 'modelFileUrl', 'modelName']
+  }
+
   /**
    * Log tag.
    */

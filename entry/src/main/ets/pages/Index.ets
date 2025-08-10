@@ -9,6 +9,11 @@ import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
+import ChatHistoryTable from '../common/database/tables/ChatHistoryTable';
+import ChatHistoryData from '../viewmodel/ChatHistoryData';
+import SessionTable from '../common/database/tables/SessionTable';
+import SessionData from '../viewmodel/SessionData';
+
 const displayClass = display.getDefaultDisplaySync();
 
 @Entry
@@ -18,11 +23,20 @@ struct CustomInput {
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
 
+  @State currentSessionId: number = -1;   // 当前会话ID
+  @State conversationCount: number = 0;   // 当前会话中的对话数量
+
+  private chatHistoryTable: ChatHistoryTable = new ChatHistoryTable();
+  private sessionTable: SessionTable = new SessionTable();
+
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
   aboutToAppear() {
-
+    // 初始化数据库
+    this.chatHistoryTable.getRdbStore(() => {
+      console.info('SessionTable 初始化成功');
+    })
   }
 
   build() {
