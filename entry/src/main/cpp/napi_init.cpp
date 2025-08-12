@@ -9,7 +9,7 @@
 #define LOG_DOMAIN 0x0721  // 全局domain宏，标识业务领域
 #define LOG_TAG "TEST"   // 全局tag宏，标识模块日志tag
 
-static llama_cpp *model = nullptr;
+static llama_cpp_mtmd *model = nullptr;
 static bool waiting = false;
 
 std::string GetStringArgument(napi_env env,napi_value arg){
@@ -31,7 +31,7 @@ std::string GetStringArgument(napi_env env,napi_value arg){
 }
 
 void load_module_thread(std::string path){
-    model = new llama_cpp(path);
+    model = new llama_cpp_mtmd(path);
     OH_LOG_INFO(LOG_APP,"end load module");
     waiting = false;
 }
@@ -72,7 +72,7 @@ static void callTS(napi_env env, napi_value jsCb, void *context, void *data) {
 }
 
 void inference_start_thread(napi_env env,napi_ref callback,std::string prompt){
-    while(waiting)    std::this_thread::sleep_for(std::chrono::seconds(1));
+    while(waiting || model->image_num == 0)    std::this_thread::sleep_for(std::chrono::seconds(1));
     waiting = true;
     OH_LOG_INFO(LOG_APP,"start inference");
     napi_value jsCb;
@@ -113,8 +113,7 @@ static napi_value NAPI_Global_inference_stop(napi_env env, napi_callback_info in
     return nullptr;
 }
 
-static napi_value Add(napi_env env, napi_callback_info info)
-{
+static napi_value Add(napi_env env, napi_callback_info info){
     size_t argc = 2;
     napi_value args[2] = {nullptr};
 
@@ -140,14 +139,35 @@ static napi_value Add(napi_env env, napi_callback_info info)
 }
 
 
+void load_image_thread(std::string path){
+    while(waiting)    std::this_thread::sleep_for(std::chrono::seconds(1));
+    waiting = true;
+    model->load_image(path);
+    OH_LOG_INFO(LOG_APP,"end load module");
+    waiting = false;
+}
+
+static napi_value NAPI_Global_load_image(napi_env env, napi_callback_info info) {
+     size_t argc = 1;            //the number of arguments
+    napi_value args[1];      //the list
+    napi_get_cb_info(env, info , &argc, args, nullptr, nullptr);        //get the info of args
+    
+    std::string path = GetStringArgument(env, args[0]);
+    std::thread thread(load_image_thread,path);
+    thread.detach();
+    return nullptr;
+}
+
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
-        { "add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"load_module", nullptr, load_module, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"unload_module", nullptr, unload_module, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"inference_start", nullptr, inference_start, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"inference_stop", nullptr, NAPI_Global_inference_stop, nullptr, nullptr, nullptr, napi_default, nullptr }
+        {"inference_stop", nullptr, NAPI_Global_inference_stop, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"load_image", nullptr, NAPI_Global_load_image, nullptr, nullptr, nullptr, napi_default, nullptr }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

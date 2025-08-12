@@ -4,6 +4,8 @@ project(backend)
 
 set(NATIVERENDER_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(CMAKE_CXX_STANDARD 17)            # 使用C++17
+
 if(DEFINED PACKAGE_FIND_FILE)
     include(${PACKAGE_FIND_FILE})
 endif()
@@ -11,7 +13,7 @@ endif()
 include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include)
 
-add_library(entry SHARED napi_init.cpp frameworkLlama.cpp)
+add_library(entry SHARED napi_init.cpp frameworkLlama.cpp mtmd.cpp clip.cpp common.cpp chat.cpp sampling.cpp json-schema-to-grammar.cpp)
 
 target_link_libraries(entry PUBLIC libace_napi.z.so libhilog_ndk.z.so librawfile.z.so)
 target_link_libraries(entry PUBLIC libace_napi.z.so)

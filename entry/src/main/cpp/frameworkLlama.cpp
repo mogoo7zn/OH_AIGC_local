@@ -25,7 +25,7 @@ llama_cpp::llama_cpp(std::string path){
     //ctx
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.n_ctx = n_ctx_num;
-    ctx_params.n_batch = 128;
+    ctx_params.n_batch = 256;
     ctx_params.no_perf = false;
     ctx_params.n_threads = 8;   //设置推理启用线程数
     ctx = llama_init_from_model(model, ctx_params);
@@ -126,4 +126,156 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
+}
+
+llama_cpp_mtmd::llama_cpp_mtmd(std::string path){
+    ggml_time_init();
+    
+    model_name = path + "model.gguf";
+    OH_LOG_INFO(LOG_APP,"load model%{public}s",model_name.c_str());
+    llama_model_params model_params = llama_model_default_params();
+    model_params.n_gpu_layers = 0;
+    //model
+    ctx.model = llama_model_load_from_file(model_name.c_str(), model_params);
+    if (ctx.model == nullptr){
+        OH_LOG_ERROR(LOG_APP,"load model error!");
+        exit(0);
+    }
+    //ctx
+    llama_context_params ctx_params = llama_context_default_params();
+    ctx_params.n_ctx = n_ctx_num;
+    ctx_params.n_batch = 128;
+    ctx_params.no_perf = false;
+    ctx_params.n_threads = 4;   //设置推理启用线程数
+    ctx.lctx = llama_init_from_model(ctx.model, ctx_params);
+    if (ctx.lctx == nullptr) {
+        OH_LOG_ERROR(LOG_APP,"initial context error!");
+        exit(0);
+    }
+    ctx.vocab = llama_model_get_vocab(ctx.model);
+    
+    ctx.n_threads = 8;
+    
+    ctx.n_batch = ctx_params.n_batch;
+    ctx.batch = llama_batch_init(ctx.n_batch, 0, 1);
+    
+    ctx.tmpls = common_chat_templates_init(ctx.model, "deepseek");;
+    ctx.antiprompt_tokens = common_tokenize(ctx.lctx, "###", false, true);
+    
+    std::string mmproj_path = path + "mmproj.gguf";
+    
+    mtmd_context_params mparams = mtmd_context_params_default();
+    mparams.use_gpu = 0;
+    mparams.print_timings = true;
+    mparams.n_threads = 8;
+    ctx_vision.reset(mtmd_init_from_file(mmproj_path.c_str(), ctx.model, mparams));
+    if (!ctx_vision.get()) {
+        OH_LOG_ERROR(LOG_APP,"Failed to load vision model");
+        exit(1);
+    }
+    common_params_sampling sampling_params;
+    smpl = common_sampler_init(ctx.model, sampling_params);
+}
+
+void llama_cpp_mtmd::load_image(const std::string & fname){
+    mtmd::bitmap bmp(mtmd_helper_bitmap_init_from_file(fname.c_str()));
+    if (!bmp.ptr) {
+        OH_LOG_ERROR(LOG_APP,"load image error!");
+    }
+    ctx.bitmaps.entries.push_back(std::move(bmp));
+    image_num += 1;
+    OH_LOG_INFO(LOG_APP,"load_image_success");
+}
+
+std::string llama_cpp_mtmd::test(){
+    return model_name;
+}
+
+llama_cpp_mtmd::~llama_cpp_mtmd(){
+
+}
+
+bool llama_cpp_mtmd::check_model_load(std::string path){
+    if (path != model_name){
+        return false;
+    }
+    return true;
+}
+
+void llama_cpp_mtmd::llama_cpp_inference_start(std::string prompt ,std::function<void(std::string)> ref){
+    if (prompt.find("<__image__>") == std::string::npos) {
+            prompt += " <__image__>";
+    }
+    common_chat_msg msg;
+    msg.role = "user";
+    msg.content = prompt;
+    common_chat_templates_inputs tmpl_inputs;
+    tmpl_inputs.messages = {msg};
+    tmpl_inputs.add_generation_prompt = true;
+    tmpl_inputs.use_jinja = false; // jinja is buggy here
+    auto formatted_chat = common_chat_templates_apply(ctx.tmpls.get(), tmpl_inputs);
+    OH_LOG_INFO(LOG_APP,"formatted_chat.prompt:%{public}s",formatted_chat.prompt.c_str());
+
+    mtmd_input_text text;
+    text.text          = formatted_chat.prompt.c_str();
+    text.add_special   = true;
+    text.parse_special = true;
+    mtmd::input_chunks chunks(mtmd_input_chunks_init());
+    auto bitmaps_c_ptr = ctx.bitmaps.c_ptr();
+    if (!ctx_vision.get()){
+        OH_LOG_ERROR(LOG_APP,"ctx_vision error!");
+    }
+    int32_t res = mtmd_tokenize(ctx_vision.get(),
+                        chunks.ptr.get(), // output
+                        &text, // text
+                        bitmaps_c_ptr.data(),
+                        bitmaps_c_ptr.size());
+    if (res != 0) {
+        OH_LOG_ERROR(LOG_APP,"Unable to tokenize prompt：%{public}d",res);
+        exit(1);
+    }
+
+    ctx.bitmaps.entries.clear();
+
+    llama_pos new_n_past;
+    OH_LOG_INFO(LOG_APP,"1");
+    if (mtmd_helper_eval_chunks(ctx_vision.get(),
+                ctx.lctx, // lctx
+                chunks.ptr.get(), // chunks
+                ctx.n_past, // n_past
+                0, // seq_id
+                ctx.n_batch, // n_batch
+                true, // logits_last
+                &new_n_past)) {
+        OH_LOG_ERROR(LOG_APP,"Unable to eval prompt");
+        exit(1);
+    }
+    OH_LOG_INFO(LOG_APP,"2");
+    ctx.n_past = new_n_past;
+    OH_LOG_INFO(LOG_APP,"new_n_past: %{public}d",new_n_past);
+    
+    llama_tokens generated_tokens;
+    std::string response;
+    for (int i = 0; i < 256; i++) {
+
+        llama_token token_id = common_sampler_sample(smpl, ctx.lctx, -1);
+        generated_tokens.push_back(token_id);
+        common_sampler_accept(smpl, token_id, true);
+
+        if (llama_vocab_is_eog(ctx.vocab, token_id) || ctx.check_antiprompt(generated_tokens)) {
+            OH_LOG_INFO(LOG_APP,"finish");
+            break; // end of generation
+        }
+        
+        response += common_token_to_piece(ctx.lctx, token_id).c_str();
+        OH_LOG_INFO(LOG_APP,"token:%{public}s",response.c_str());
+        ref(response.c_str());
+        // eval the token
+        common_batch_clear(ctx.batch);
+        common_batch_add(ctx.batch, token_id, ctx.n_past++, {0}, true);
+        if (llama_decode(ctx.lctx, ctx.batch)) {
+            OH_LOG_ERROR(LOG_APP,"failed to decode token");
+            exit(1);
+        }
+    }
 }
