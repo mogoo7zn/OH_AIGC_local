@@ -15,6 +15,7 @@ import { picker } from '@kit.CoreFileKit';
 import { fileShare } from '@kit.CoreFileKit';
 import ChatHistoryData from '../viewmodel/ChatHistoryData'
 import Rdb from '../common/database/Rdb'
+import testNapi from 'libentry.so';
 
 
 import {
@@ -595,6 +596,7 @@ struct Chat {
           //.offset({ x : 40 + 10 })
           .onClick(()=>{
             this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage);
+            //testNapi.unload_module();
             this.getUIContext().getFocusController().requestFocus('TextArea')
 
             // this.getUIContext().getRouter().replaceUrl({
