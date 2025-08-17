@@ -134,6 +134,7 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
     prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
+    ref("炸薯丸出品");
 }
 
 void llama_cpp::add_message(std::string role,std::string content){

@@ -8,7 +8,7 @@ let dataPreferences: preferences.Preferences ;
 @Entry
 @Component
 struct PromptSetting {
-  @State prompt : string = '';
+  @State prompt : string = '你是一个有用的ai助手，请解答用户的问题，但当用户让你打开某个应用的时候，请输出：{open:"应用名"}';
   controller: TextAreaController = new TextAreaController();
 
   aboutToAppear(): void {

@@ -596,7 +596,10 @@ struct Chat {
           //.offset({ x : 40 + 10 })
           .onClick(()=>{
             this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage);
-            //testNapi.unload_module();
+            testNapi.unload_module();
+            setTimeout(() => {
+              console.info('delay 1s');
+            }, 1000);
             this.getUIContext().getFocusController().requestFocus('TextArea')
 
             // this.getUIContext().getRouter().replaceUrl({

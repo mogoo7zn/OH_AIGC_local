@@ -45,17 +45,17 @@ export async function Picker_persistPermission() : Promise<string> {
     let documentPicker = new picker.DocumentViewPicker();
     let uris = await documentPicker.select(DocumentSelectOptions);
 
-    for(let i=0;i<uris.length;i++){
-      console.info("has persisted uris");
-      console.info("persisted uris:" + uris[i]);
-    }
+    // for(let i=0;i<uris.length;i++){
+    //   console.info("has persisted uris");
+    //   console.info("persisted uris:" + uris[i]);
+    // }
 
     let policyInfo: fileShare.PolicyInfo = {
       uri: uris[0],
       operationMode: fileShare.OperationMode.READ_MODE,
     };
     let policies: Array<fileShare.PolicyInfo> = [policyInfo];
-    fileShare.persistPermission(policies).then(() => {
+    await fileShare.persistPermission(policies).then(() => {
       console.info("persistPermission successfully");
       console.info("persisted uris:" + uris[0]);
       uri = uris[0];
