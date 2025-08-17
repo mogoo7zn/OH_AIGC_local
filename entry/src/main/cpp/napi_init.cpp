@@ -31,24 +31,25 @@ std::string GetStringArgument(napi_env env,napi_value arg){
     return result;
 }
 
-void load_module_thread(std::string path){
-    model = new llama_cpp(path);
+void load_module_thread(std::string path,std::string prompt){
+    model = new llama_cpp(path,prompt);
     OH_LOG_INFO(LOG_APP,"end load module");
     waiting = false;
 }
 
 static napi_value load_module(napi_env env, napi_callback_info info){
-    size_t argc = 1;            //the number of arguments
-    napi_value args[1];      //the list
+    size_t argc = 2;            //the number of arguments
+    napi_value args[2];      //the list
     napi_get_cb_info(env, info , &argc, args, nullptr, nullptr);        //get the info of args
     
     std::string path = GetStringArgument(env, args[0]);
+    std::string prompt = GetStringArgument(env, args[1]);
     if(model!=nullptr && model->check_model_load(path)){
         return nullptr;
     }
     OH_LOG_INFO(LOG_APP,"start load module");
     waiting = true;
-    std::thread thread(load_module_thread,path);
+    std::thread thread(load_module_thread,path,prompt);
     thread.detach();
     return nullptr;
 }
@@ -227,7 +228,6 @@ static napi_value NAPI_Global_inference_multimodal_start(napi_env env, napi_call
     return nullptr;
 }
 
-
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -241,7 +241,8 @@ static napi_value Init(napi_env env, napi_value exports) {
          nullptr},
         {"unload_multimodal_module", nullptr, NAPI_Global_unload_multimodal_module, nullptr, nullptr, nullptr,
          napi_default, nullptr},
-        {"inference_multimodal_start", nullptr, NAPI_Global_inference_multimodal_start, nullptr, nullptr, nullptr, napi_default, nullptr }
+        {"inference_multimodal_start", nullptr, NAPI_Global_inference_multimodal_start, nullptr, nullptr, nullptr,
+         napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

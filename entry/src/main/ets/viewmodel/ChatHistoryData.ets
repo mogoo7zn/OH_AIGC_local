@@ -1,8 +1,7 @@
 export default class ChatHistoryData {
   id: number = -1;
-  session_id: number = 0;
-  conversation_id: number = 0;
-  user_input: string = '';
-  bot_output: string = '';
-  model_name: string = '';
+  sessionId: number = 0;
+  conversationId: number = 0;
+  userInput: string = '';
+  botOutput: string = '';
 }

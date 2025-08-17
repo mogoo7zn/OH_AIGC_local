@@ -11,7 +11,12 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { preferences } from '@kit.ArkData';
 
-let dataPreferences: preferences.Preferences ;
+import ChatHistoryTable from '../common/database/tables/ChatHistoryTable';
+import ChatHistoryData from '../viewmodel/ChatHistoryData';
+import SessionTable from '../common/database/tables/SessionTable';
+import SessionData from '../viewmodel/SessionData';
+
+const displayClass = display.getDefaultDisplaySync();
 
 @Entry
 @Component
@@ -23,6 +28,12 @@ struct CustomInput {
   last_token = '';
   //@Consume('modeluri') model_uri : string
 
+  @State currentSessionId: number = -1;   // 当前会话ID
+  @State conversationCount: number = 0;   // 当前会话中的对话数量
+
+  private chatHistoryTable: ChatHistoryTable = new ChatHistoryTable();
+  private sessionTable: SessionTable = new SessionTable();
+
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
@@ -30,6 +41,10 @@ struct CustomInput {
     let context = this.getUIContext().getHostContext() as Context
     let options: preferences.Options = { name: 'myStore' };
     dataPreferences = preferences.getPreferencesSync(context, options);
+    // 初始化数据库
+    this.chatHistoryTable.getRdbStore(() => {
+      console.info('SessionTable 初始化成功');
+    })
   }
 
   build() {
