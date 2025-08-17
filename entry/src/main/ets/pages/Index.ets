@@ -120,8 +120,6 @@ struct CustomInput {
         const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
         const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
 
-          const fileTest = "/storage/Users/currentUser/Download"+'/';
-
           if(!message.picurl){
 
             testNapi.load_module(file.path,this.prompt);

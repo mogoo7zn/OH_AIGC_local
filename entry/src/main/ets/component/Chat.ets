@@ -870,8 +870,10 @@ struct Chat {
                 this.selected_model_uri = this.models_uri[this.selected_model_index as number];
                 this.hasSelect = true;
                 console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
-                // let context = this.getUIContext().getHostContext() as common.UIAbilityContext; // 请确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
-                // let documentPicker = new picker.DocumentViewPicker(context);
+
+                const modeluri = this.selected_model_uri
+                let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
+                testNapi.load_module(file.path,CONST.prompt);
               },
               onCancel: () => {
                 this.hasSelect = false;
