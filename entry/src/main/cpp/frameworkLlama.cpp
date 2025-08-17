@@ -49,7 +49,7 @@ llama_cpp::llama_cpp(std::string path,std::string prompt){
     llama_sampler_chain_add(sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
     
     //message
-    messages.push_back({"system",prompt.c_str()});
+    messages.push_back({"system",strdup(prompt.c_str())});
     OH_LOG_INFO(LOG_APP,"prompt:%{public}s",prompt.c_str());
     OH_LOG_INFO(LOG_APP,"load model success");
 }
@@ -85,8 +85,9 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         OH_LOG_ERROR(LOG_APP,"new_len error!");
         exit(0);
     }
-    OH_LOG_INFO(LOG_APP,"formatted=%{public}s",formatted.data());
-    std::string new_prompt(formatted.begin() + prev_len,formatted.begin()+new_len);
+    OH_LOG_INFO(LOG_APP,"formatted=%{public}s ,peev_len=%{public}d",formatted.data(),prev_len);
+    std::string new_prompt(formatted.begin() + prev_len,formatted.begin() + new_len);
+    OH_LOG_INFO(LOG_APP,"new_prompt=%{public}s ,peev_len=%{public}d",new_prompt.c_str(),prev_len);
     //start forward
     std::string response;
     const bool is_first = llama_kv_self_used_cells(ctx) == 0;
@@ -130,6 +131,7 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
+    prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
 }
 
 llama_cpp_mtmd::llama_cpp_mtmd(std::string module_path , std::string mmproj_path){

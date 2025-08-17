@@ -15,7 +15,7 @@
 #include "mtmd.h"
 #include "common.h"
 
-#define n_ctx_num 2048
+#define n_ctx_num 128
 
 
 class llama_cpp{
