@@ -112,7 +112,7 @@ struct PromptSetting {
         .caretColor(Color.Black)
         .backgroundColor($r('app.color.input_background'))
         .wordBreak(WordBreak.BREAK_WORD)
-        .maxLength(256)
+        .maxLength(512)
         .showCounter(true, { thresholdPercentage: 50, highlightBorder: true })
         //计数器显示效果为用户当前输入字符数/最大字符限制数。最大字符限制数通过maxLength()接口设置。
         //如果用户当前输入字符数达到最大字符限制乘50%（thresholdPercentage）。字符计数器显示。
