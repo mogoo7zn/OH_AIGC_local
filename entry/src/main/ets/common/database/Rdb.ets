@@ -31,7 +31,7 @@ export default class Rdb {
       return;
     }
     let context: Context = getContext(this) as Context;
-    relationalStore.getRdbStore(context, Constants.STORE_CONFIG, (err, rdb) => {
+    relationalStore.getRdbStore(context, Constants.StoreConfig, (err, rdb) => {
       if (err) {
         Logger.error(Constants.RDB_TAG, `gerRdbStore() 失败, 错误原因: ${err}`);
         return;
