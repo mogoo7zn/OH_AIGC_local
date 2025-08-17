@@ -50,11 +50,14 @@ static napi_value load_module(napi_env env, napi_callback_info info){
     OH_LOG_INFO(LOG_APP,"start load module");
     waiting = true;
     std::thread thread(load_module_thread,path,prompt);
-    thread.detach();
+    thread.detach(); 
     return nullptr;
 }
 
 static napi_value unload_module(napi_env env, napi_callback_info info) {
+    model->stop = true;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    OH_LOG_INFO(LOG_APP,"unload model");
     delete model;
     model = nullptr;
     return nullptr;
