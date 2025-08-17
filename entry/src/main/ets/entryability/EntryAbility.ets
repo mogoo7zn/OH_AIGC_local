@@ -5,7 +5,7 @@ import { relationalStore } from '@kit.ArkData';
 
 import { preferences } from '@kit.ArkData';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { fileShare } from '@kit.CoreFileKit';
+import { fileShare  } from '@kit.CoreFileKit';
 import { Constants as CONST} from '../common/Constants'
 import ChatHistoryTable from '../common/database/tables/ChatHistoryTable'
 
@@ -60,14 +60,8 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    preferences.getPreferences(this.context, 'myStore', (err: BusinessError, val: preferences.Preferences) => {
-      if (err) {
-        console.error("Failed to get preferences. code =" + err.code + ", message =" + err.message);
-        return;
-      }
-      dataPreferences = val;
-      console.info("Succeeded in getting preferences.");
-    })
+    let options: preferences.Options = { name: 'myStore' };
+    dataPreferences = preferences.getPreferencesSync(this.context, options);
 
     // 激活模型文件的使用权限
     activatePermissionExample(CONST.model_uri);

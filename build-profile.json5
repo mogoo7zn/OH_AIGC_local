@@ -1,10 +1,24 @@
 {
   "app": {
     "signingConfigs": [
+      {
+        "name": "AIGCLOC",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B259525FB8B94F00A65A88B58AEDA567D52D634C6D43238FAFE96C1737CE02DD3FAE29C45D7AAFC",
+          "profile": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\16343\\.ohos\\config\\AIGCLOC_OH_AIGC_local_-SMUyCbo8DHnxOAIJj697rYQ7Yl-T-F5SjAVcEJ254A=.p12",
+          "storePassword": "0000001B4F97A62056572185B10BD94462C0F7E461EBA1F8547857E458FDB1C6D9930DFB450156FACDFA3E"
+        }
+      }
     ],
     "products": [
       {
         "name": "default",
+        "signingConfig": "AIGCLOC",
         "targetSdkVersion": "5.0.5(17)",
         "compatibleSdkVersion": "5.0.5(17)",
         "runtimeOS": "HarmonyOS",

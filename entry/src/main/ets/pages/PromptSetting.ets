@@ -1,8 +1,21 @@
+import { preferences } from '@kit.ArkData';
+import { util } from '@kit.ArkTS';
+import { BusinessError } from '@kit.BasicServicesKit';
+
+
+let dataPreferences: preferences.Preferences ;
+
 @Entry
 @Component
 struct PromptSetting {
-  text : string = '';
+  @State prompt : string = '';
   controller: TextAreaController = new TextAreaController();
+
+  aboutToAppear(): void {
+    let context = this.getUIContext().getHostContext() as Context
+    let options: preferences.Options = { name: 'myStore' };
+    dataPreferences = preferences.getPreferencesSync(context, options);
+  }
 
   build() {
     RelativeContainer() {
@@ -25,9 +38,61 @@ struct PromptSetting {
         this.getUIContext().getRouter().back()
       })
 
+      Button('保存')
+        .fontSize(16)
+        .fontColor(Color.Black)
+        .backgroundColor(Color.White)
+        .height(35)
+        .alignRules({
+          center: { anchor: '__container__', align: VerticalAlign.Top },
+          right: { anchor: '__container__', align: HorizontalAlign.End },
+        })
+        .padding(5)
+        .margin(5)
+        .offset({
+          y: 25,
+          x: -5,
+        })
+        .onClick(()=>{
+          this.promptWrite(this.prompt);
+          this.getUIContext().showAlertDialog({
+            // title: '提示',
+            message: '您的prompt已保存！',
+            autoCancel: true,
+            alignment: DialogAlignment.Center,
+
+            offset: { dx: 0, dy: 0 },
+            gridCount: 3,
+            width: 300,
+            height: 125,
+            backgroundColor: Color.White,
+            textStyle: { wordBreak: WordBreak.BREAK_ALL },
+            confirm: {
+              value: '好的',
+              action: () => {
+                console.info('Button-clicking callback');
+              }
+            },
+            cancel: () => {
+              console.info('Closed callbacks');
+            },
+            onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+              console.info(`reason= ${dismissDialogAction.reason}`);
+              console.info('AlertDialog onWillDismiss');
+              if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
+                dismissDialogAction.dismiss();
+              }
+              if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+                dismissDialogAction.dismiss();
+              }
+            }
+          })
+        })
+
       TextArea({
         placeholder: 'Please enter your prompt here ... \n（默认：······）',
-        controller: this.controller
+        controller: this.controller,
+        text: this.prompt
       })
         .alignRules({
           top: { anchor: 'back button', align: VerticalAlign.Bottom },
@@ -54,14 +119,35 @@ struct PromptSetting {
         //用户设置highlightBorder为false时，配置取消红色边框。不设置此参数时，默认为true。
         .enterKeyType(EnterKeyType.Send)
         .onChange((value: string) => {
-          this.text = value;
+          this.prompt = value;
         })
         .onSubmit(()=>{
-
+          this.promptWrite(this.prompt);
         })
-
+        .onAppear(()=>{
+          let getprompt = this.promptGet()
+          if(getprompt != 'default'){
+            this.prompt = getprompt
+          }
+        })
     }
     .height('100%')
     .width('100%')
+  }
+
+  promptWrite (prompt : string) {
+    dataPreferences.putSync('prompt', prompt);
+    dataPreferences.flush((err: BusinessError) => {
+      if (err) {
+        console.error(`Failed to flush. Code:${err.code}, message:${err.message}`);
+        return;
+      }
+      console.info('Succeeded in flushing.');
+    })
+  }
+
+  promptGet () : string {
+    let val = dataPreferences.getSync('prompt', 'default') as string;
+    return val;
   }
 }

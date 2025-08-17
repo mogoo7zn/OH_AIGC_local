@@ -899,8 +899,8 @@ struct Chat {
                 this.selected_model_name = value.value as string;
                 this.hasSelect = true;
                 console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
-                let context = this.getUIContext().getHostContext() as common.UIAbilityContext; // 请确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
-                let documentPicker = new picker.DocumentViewPicker(context);
+                // let context = this.getUIContext().getHostContext() as common.UIAbilityContext; // 请确保this.getUIContext().getHostContext()返回结果为UIAbilityContext
+                // let documentPicker = new picker.DocumentViewPicker(context);
               },
               onCancel: () => {
                 this.hasSelect = false;
@@ -919,6 +919,7 @@ struct Chat {
                 console.info("TextPickerDialog:onDidDisappear()");
               },
               onWillAppear: () => {
+                // todo : 从数据库更新this.momdels
                 console.info("TextPickerDialog:onWillAppear()");
               },
               onWillDisappear: () => {

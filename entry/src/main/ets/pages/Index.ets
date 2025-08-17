@@ -9,7 +9,9 @@ import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { fileIo } from '@kit.CoreFileKit';
+import { preferences } from '@kit.ArkData';
 
+let dataPreferences: preferences.Preferences ;
 
 @Entry
 @Component
@@ -17,13 +19,17 @@ struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
+  prompt : string = ''
+  last_token = '';
   //@Consume('modeluri') model_uri : string
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
   aboutToAppear() {
-
+    let context = this.getUIContext().getHostContext() as Context
+    let options: preferences.Options = { name: 'myStore' };
+    dataPreferences = preferences.getPreferencesSync(context, options);
   }
 
   build() {
@@ -82,22 +88,44 @@ struct CustomInput {
       this.userInput = ''
       //显示回复等待动画
       ctl.setTyping(true)
-      //3秒后发送chatbot响应消息
+    this.prompt = dataPreferences.getSync('prompt', 'default') as string
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-          const fileName = this.selected_model_name
+          const modeluri = this.selected_model_name
+        const multimodeluri = this.selected_model_name
           const fileTest = "/storage/Users/currentUser/Download"+'/';
-          testNapi.load_module(fileTest);
-          testNapi.load_image(fileTest + "2.png");
-          testNapi.inference_start(message.content,
-            (token:string)=>{
+
+          if(message.picurl == ''){
+            testNapi.load_module(fileTest);
+            testNapi.inference_start(message.content,
+              (token:string)=>{
+                //todo
+                if(token == '###'){
+                  // 存入数据库
+
+                }
+                ctl.deleteMessage()
+                ctl.postMessage(new ChatMessage({
+                  role: ChatRole.Assistant,
+                  content: token
+                }))
+                this.last_token = token;
+              })
+          } else {
+            testNapi.load_multimodal_module(multimodeluri,multimodeluri)
+            testNapi.load_multimodal_image(message.picurl)
+            testNapi.inference_multimodal_start(message.content,
+              (token:string)=>{
                 //todo
                 ctl.deleteMessage()
                 ctl.postMessage(new ChatMessage({
                   role: ChatRole.Assistant,
                   content: token
                 }))
-            })
+                this.last_token = token;
+              })
+          }
+
       } catch (err){
         console.error("test:error,%s",err);
       }

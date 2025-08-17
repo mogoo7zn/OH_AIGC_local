@@ -44,6 +44,12 @@ export async function Picker_persistPermission() : Promise<string> {
     DocumentSelectOptions.maxSelectNumber = 1;
     let documentPicker = new picker.DocumentViewPicker();
     let uris = await documentPicker.select(DocumentSelectOptions);
+
+    for(let i=0;i<uris.length;i++){
+      console.info("has persisted uris");
+      console.info("persisted uris:" + uris[i]);
+    }
+
     let policyInfo: fileShare.PolicyInfo = {
       uri: uris[0],
       operationMode: fileShare.OperationMode.READ_MODE,

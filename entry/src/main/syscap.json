@@ -7,7 +7,8 @@
   },
   "development": {
     "addedSysCaps": [
-      "SystemCapability.FileManagement.AppFileService.FolderAuthorization"
+      "SystemCapability.FileManagement.AppFileService.FolderAuthorization",
+      "SystemCapability.FileManagement.UserFileService.FolderSelection"
     ]
   }
 }
