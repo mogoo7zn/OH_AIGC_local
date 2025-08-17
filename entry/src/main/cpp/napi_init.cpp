@@ -55,11 +55,13 @@ static napi_value load_module(napi_env env, napi_callback_info info){
 }
 
 static napi_value unload_module(napi_env env, napi_callback_info info) {
-    model->stop = true;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    if (model!=nullptr){
+        model->stop = true;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        delete model;
+        model = nullptr;
+    }
     OH_LOG_INFO(LOG_APP,"unload model");
-    delete model;
-    model = nullptr;
     return nullptr;
 }
 

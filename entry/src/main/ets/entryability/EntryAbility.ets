@@ -62,6 +62,14 @@ export default class EntryAbility extends UIAbility {
 
     let options: preferences.Options = { name: 'myStore' };
     dataPreferences = preferences.getPreferencesSync(this.context, options);
+    dataPreferences.putSync('prompt', CONST.prompt);
+    dataPreferences.flush((err: BusinessError) => {
+      if (err) {
+        console.error(`Failed to flush. Code:${err.code}, message:${err.message}`);
+        return;
+      }
+      console.info('Succeeded in flushing.');
+    })
 
     // 激活模型文件的使用权限
     activatePermissionExample(CONST.model_uri);
