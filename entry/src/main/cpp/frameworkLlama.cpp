@@ -72,6 +72,7 @@ bool llama_cpp::check_model_load(std::string path){
 }
 
 void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void(std::string)> ref){
+    stop = false;
     OH_LOG_INFO(LOG_APP,"userinput=%{public}s",prompt.c_str());
     const char * tmpl = llama_model_chat_template(model, /* name */ nullptr);
     std::vector<char> formatted(llama_n_ctx(ctx));
@@ -124,6 +125,7 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         std::string piece(buf, n);
         OH_LOG_INFO(LOG_APP,"token:%{public}s,n_ctx_used=%{public}d,batch.n_tokens=%{public}d",piece.c_str(),n_ctx_used,batch.n_tokens);
         response += piece;
+        if (stop)   return;
         ref(response.c_str());
         batch = llama_batch_get_one(&new_token_id, 1);
     }

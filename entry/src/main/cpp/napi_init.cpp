@@ -111,7 +111,11 @@ static napi_value inference_start(napi_env env, napi_callback_info info) {
 }
 
 static napi_value NAPI_Global_inference_stop(napi_env env, napi_callback_info info) {
-    // TODO: implements the code;
+    if (model != nullptr){
+        model->stop = true;
+    }else if(multimodal_model !=nullptr){
+        multimodal_model->stop =true;
+    }
     return nullptr;
 }
 
