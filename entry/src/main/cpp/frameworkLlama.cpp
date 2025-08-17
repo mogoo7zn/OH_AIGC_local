@@ -11,7 +11,7 @@ std::string llama_cpp::test(){
     return model_name;
 }
 
-llama_cpp::llama_cpp(std::string path){
+llama_cpp::llama_cpp(std::string path,std::string prompt){
     model_name = path;
     OH_LOG_INFO(LOG_APP,"load model%{public}s",path.c_str());
     llama_model_params model_params = llama_model_default_params();
@@ -48,6 +48,9 @@ llama_cpp::llama_cpp(std::string path){
     llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.8f));
     llama_sampler_chain_add(sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
     
+    //message
+    messages.push_back({"system",strdup(prompt.c_str())});
+    OH_LOG_INFO(LOG_APP,"prompt:%{public}s",prompt.c_str());
     OH_LOG_INFO(LOG_APP,"load model success");
 }
 
@@ -69,7 +72,8 @@ bool llama_cpp::check_model_load(std::string path){
 }
 
 void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void(std::string)> ref){
-    OH_LOG_INFO(LOG_APP,"prompt=%{public}s",prompt.c_str());
+    stop = false;
+    OH_LOG_INFO(LOG_APP,"userinput=%{public}s",prompt.c_str());
     const char * tmpl = llama_model_chat_template(model, /* name */ nullptr);
     std::vector<char> formatted(llama_n_ctx(ctx));
     messages.push_back({"user",strdup(prompt.c_str())});
@@ -82,8 +86,9 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         OH_LOG_ERROR(LOG_APP,"new_len error!");
         exit(0);
     }
-    OH_LOG_INFO(LOG_APP,"formatted=%{public}s",formatted.data());
-    std::string new_prompt(formatted.begin() + prev_len,formatted.begin()+new_len);
+    OH_LOG_INFO(LOG_APP,"formatted=%{public}s ,peev_len=%{public}d",formatted.data(),prev_len);
+    std::string new_prompt(formatted.begin() + prev_len,formatted.begin() + new_len);
+    OH_LOG_INFO(LOG_APP,"new_prompt=%{public}s ,peev_len=%{public}d",new_prompt.c_str(),prev_len);
     //start forward
     std::string response;
     const bool is_first = llama_kv_self_used_cells(ctx) == 0;
@@ -100,7 +105,8 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         int n_ctx = llama_n_ctx(ctx);
         int n_ctx_used = llama_kv_self_used_cells(ctx);
         if (n_ctx_used + batch.n_tokens > n_ctx) {
-            OH_LOG_INFO(LOG_APP,"context size exceeded");
+            
+            OH_LOG_INFO(LOG_APP,"used %{public}d, batch %{public}d, context size exceeded",n_ctx_used,batch.n_tokens);
             break;
         }
         if (llama_decode(ctx, batch)) {
@@ -120,18 +126,25 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         std::string piece(buf, n);
         OH_LOG_INFO(LOG_APP,"token:%{public}s,n_ctx_used=%{public}d,batch.n_tokens=%{public}d",piece.c_str(),n_ctx_used,batch.n_tokens);
         response += piece;
+        if (stop)   return;
         ref(response.c_str());
         batch = llama_batch_get_one(&new_token_id, 1);
     }
-    
+    prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
+    prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
+    ref("炸薯丸出品");
 }
 
-llama_cpp_mtmd::llama_cpp_mtmd(std::string path){
+void llama_cpp::add_message(std::string role,std::string content){
+    messages.push_back({role.c_str(),strdup(content.c_str())});
+}
+
+llama_cpp_mtmd::llama_cpp_mtmd(std::string module_path , std::string mmproj_path){
     ggml_time_init();
     
-    model_name = path + "model.gguf";
+    model_name = module_path;
     OH_LOG_INFO(LOG_APP,"load model%{public}s",model_name.c_str());
     llama_model_params model_params = llama_model_default_params();
     model_params.n_gpu_layers = 0;
@@ -162,8 +175,6 @@ llama_cpp_mtmd::llama_cpp_mtmd(std::string path){
     ctx.tmpls = common_chat_templates_init(ctx.model, "deepseek");;
     ctx.antiprompt_tokens = common_tokenize(ctx.lctx, "###", false, true);
     
-    std::string mmproj_path = path + "mmproj.gguf";
-    
     mtmd_context_params mparams = mtmd_context_params_default();
     mparams.use_gpu = 0;
     mparams.print_timings = true;
@@ -192,7 +203,11 @@ std::string llama_cpp_mtmd::test(){
 }
 
 llama_cpp_mtmd::~llama_cpp_mtmd(){
-
+    llama_sampler_free(sampler);
+    common_sampler_free(smpl);
+    llama_free(ctx.lctx);
+    llama_model_free(ctx.model);
+    delete ctx.vocab;
 }
 
 bool llama_cpp_mtmd::check_model_load(std::string path){

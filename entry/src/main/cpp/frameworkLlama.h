@@ -15,7 +15,7 @@
 #include "mtmd.h"
 #include "common.h"
 
-#define n_ctx_num 512
+#define n_ctx_num 2048
 
 
 class llama_cpp{
@@ -26,15 +26,17 @@ class llama_cpp{
         const llama_vocab *vocab; 
         llama_sampler *sampler;
         int prev_len = 0;
-    
-        std::vector<llama_chat_message> messages={{"system","你是一个有用的AI助手，负责回答问题"}};
-    
+        std::vector<llama_chat_message> messages={};
+        
     public:
-        llama_cpp(std::string path);
+        llama_cpp(std::string path,std::string prompt);
         ~llama_cpp();
         bool check_model_load(std::string path);
         std::string test();
         void llama_cpp_inference_start(std::string prompt, std::function<void(std::string)> ref);
+        void add_message(std::string role,std::string content);    
+    
+        bool stop=false;
 };
 
 struct mtmd_cli_context {
@@ -80,11 +82,13 @@ class llama_cpp_mtmd{
         
     public:
         int                 image_num = 0;
-        llama_cpp_mtmd(std::string path);
+        llama_cpp_mtmd(std::string module_path , std::string mmproj_path);
         ~llama_cpp_mtmd();
         bool check_model_load(std::string path);
         std::string test();
         void load_image(const std::string & fname);
         void llama_cpp_inference_start(std::string prompt,std::function<void(std::string)> ref);
+
+        bool stop;
 };
 #endif

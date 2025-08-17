@@ -9,13 +9,18 @@ import testNapi from 'libentry.so';
 import { Constants as CONST} from '../common/Constants'
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { fileIo } from '@kit.CoreFileKit';
+import { preferences } from '@kit.ArkData';
 
 import ChatHistoryTable from '../common/database/tables/ChatHistoryTable';
 import ChatHistoryData from '../viewmodel/ChatHistoryData';
 import SessionTable from '../common/database/tables/SessionTable';
 import SessionData from '../viewmodel/SessionData';
+import { common, Want, OpenLinkOptions } from '@kit.AbilityKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const displayClass = display.getDefaultDisplaySync();
+=========
+>>>>>>>>> Temporary merge branch 2
 
 @Entry
 @Component
@@ -23,6 +28,9 @@ struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
+  @State selected_model_uri : string = ''
+  prompt : string = ''
+  last_token = '';
   //@Consume('modeluri') model_uri : string
 
   @State currentSessionId: number = -1;   // 当前会话ID
@@ -35,6 +43,9 @@ struct CustomInput {
   @State text: string = '^.^'       //  模型输出
   @State modelState: number = 0     //  0：模型空置； 1：模型运行； 2：模型加载
   aboutToAppear() {
+    let context = this.getUIContext().getHostContext() as Context
+    let options: preferences.Options = { name: 'myStore' };
+    dataPreferences = preferences.getPreferencesSync(context, options);
     // 初始化数据库
     this.chatHistoryTable.getRdbStore(() => {
       console.info('SessionTable 初始化成功');
@@ -70,6 +81,7 @@ struct CustomInput {
               useMarkdown: true,
               onSendMessage: this.sendMessage,
               selected_model_name: this.selected_model_name,
+              selected_model_uri: this.selected_model_uri
             })
         }
         .height('100%')
@@ -97,25 +109,61 @@ struct CustomInput {
       this.userInput = ''
       //显示回复等待动画
       ctl.setTyping(true)
-      //3秒后发送chatbot响应消息
+    this.prompt = dataPreferences.getSync('prompt', 'default') as string
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-          const fileName = this.selected_model_name
-          const fileTest = "/storage/Users/currentUser/Download"+'/';
-          testNapi.load_module(fileTest);
-          testNapi.load_image(fileTest + "2.png");
-          testNapi.inference_start(message.content,
-            (token:string)=>{
+        const modeluri = this.selected_model_uri
+        let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
+
+        const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
+        const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
+
+          if(!message.picurl){
+
+            testNapi.load_module(file.path,this.prompt);
+            testNapi.inference_start(message.content,
+              (token:string)=>{
                 //todo
+                if(token == '炸薯丸出品'){
+                  // todo ：存入数据库
+
+
+                  // 分析意图
+                  analyzeIntension(this.last_token,this.getUIContext().getHostContext() as common.UIAbilityContext)
+                  return
+                }
                 ctl.deleteMessage()
                 ctl.postMessage(new ChatMessage({
                   role: ChatRole.Assistant,
                   content: token
                 }))
-            })
+                this.last_token = token;
+              })
+          } else {
+            testNapi.load_multimodal_module(multimodeluri0,multimodeluri1)
+            testNapi.load_multimodal_image(message.picurl)
+            testNapi.inference_multimodal_start(message.content,
+              (token:string)=>{
+                ctl.deleteMessage()
+                ctl.postMessage(new ChatMessage({
+                  role: ChatRole.Assistant,
+                  content: token
+                }))
+                this.last_token = token;
+              })
+          }
+
       } catch (err){
         console.error("test:error,%s",err);
       }
+  }
+
+  private async new_session(path:string,prompt:string){
+
+  }
+
+  private async save_session(input:string,output:string){
+
   }
 
   // aboutToAppear() {
@@ -129,30 +177,129 @@ struct CustomInput {
   //}
 }
 
-/*
-  开始推理
- */
-function startInfer(prompt: string) {
+// function pickAPP(){
+//   let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+//   let wantParam: Record<string, Object> = {
+//     'sceneType': 3,
+//     'destinationName': '武汉市华中科技大学',
+//   };
+//   let abilityStartCallback: common.AbilityStartCallback = {
+//     onError: (code: number, name: string, message: string) => {
+//       console.log(`onError code ${code} name: ${name} message: ${message}`);
+//     }
+//   }
+//
+//   context.startAbilityByType("navigation", wantParam, abilityStartCallback,
+//     (err) => {
+//       if (err) {
+//         console.error(`startAbilityByType fail, err: ${JSON.stringify(err)}`);
+//       } else {
+//         console.log(`success`);
+//       }
+//     });
+// }
 
+function openlink(url: string,context: common.UIAbilityContext){
+  let link: string = url;
+  let openLinkOptions: OpenLinkOptions = {
+    appLinkingOnly: false
+  };
+
+  try {
+    context.openLink(link, openLinkOptions)
+      .then(() => {
+        hilog.info(DOMAIN_NUMBER, TAG, 'openLink success.');
+      }).catch((err: BusinessError) => {
+      hilog.error(DOMAIN_NUMBER, TAG, `openLink failed. Code is ${err.code}, message is ${err.message}`);
+    });
+  } catch (paramError) {
+    hilog.error(DOMAIN_NUMBER, TAG, `Failed to start link. Code is ${paramError.code}, message is ${paramError.message}`);
+  }
 }
 
-/*
-  停止推理
- */
-function stopInfer() {
-
+function  analyzeIntension(token: string,ctx: common.UIAbilityContext){
+  let url = parseJsonFromEnd(token).url
+  if(url != ''){
+    openlink(url,ctx);
+  }
 }
 
-/*
-  结束模型使用
- */
-function dropModel() {
-
+// 定义 JSON 对象类型
+interface AppConfig {
+  open: string;
+  url: string;
 }
 
-/*
-  选择模型
- */
-function chooseMeodel(name: string) {
+// 主函数：从字符串末尾解析 JSON
+function parseJsonFromEnd(input: string): AppConfig {
+  let nolink : AppConfig = {open:'',url:''}
+  // 1. 检查输入是否有效
+  if (!input || input.length === 0) {
+    console.error("输入字符串为空");
+    return nolink;
+  }
 
+  // 2. 从字符串末尾开始查找可能的 JSON 起始位置
+  let jsonStartIndex = -1;
+  let braceCount = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  // 从后向前扫描字符串
+  for (let i = input.length - 1; i >= 0; i--) {
+    const char = input[i];
+
+    // 处理转义字符
+    if (char === '\\' && !escapeNext) {
+      escapeNext = true;
+      continue;
+    }
+
+    // 处理字符串边界
+    if (char === '"' && !escapeNext) {
+      inString = !inString;
+    }
+
+    // 只在非字符串区域处理大括号
+    if (!inString) {
+      if (char === '}') {
+        braceCount++;
+      } else if (char === '{') {
+        braceCount--;
+
+        // 当找到匹配的起始大括号时
+        if (braceCount === 0) {
+          jsonStartIndex = i;
+          break;
+        }
+      }
+    }
+
+    escapeNext = false;
+  }
+
+  // 3. 验证是否找到有效的 JSON 对象
+  if (jsonStartIndex === -1) {
+    console.error("未找到有效的 JSON 对象");
+    return nolink;
+  }
+
+  // 4. 提取 JSON 字符串片段
+  const jsonString = input.substring(jsonStartIndex);
+
+  try {
+    // 5. 尝试解析 JSON
+    const parsed = JSON.parse(jsonString) as AppConfig;
+
+    // 6. 验证必需字段
+    if (typeof parsed.open === 'string' && typeof parsed.url === 'string') {
+      return parsed;
+    } else {
+      console.error("JSON 对象缺少必需的 open 或 uri 字段");
+      return nolink;
+    }
+  } catch (error) {
+    console.error("JSON 解析失败:", error);
+    return nolink;
+  }
 }
