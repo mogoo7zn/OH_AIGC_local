@@ -463,13 +463,6 @@ struct Chat {
     if (this.welcomeMessage) {
       this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
     }
-    modelPathTable.query(-1,'',(models: ModelPath[])=>{
-      for(let i=0;i<models.length;i++){
-        this.models.push(models[i].modelName)
-        this.models_uri.push(models[i].modelFileUrl)
-        hilog.info(0,"test",'models:%{public}s',this.models_uri[i])
-      }
-    }, true)
 
     // // 设置picker宫格页数据类型
     // this.pickerOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE // 图片和照片都显示。
@@ -896,6 +889,7 @@ struct Chat {
                 console.info("TextPickerDialog:onWillAppear()");
               },
               onWillDisappear: () => {
+                this.models = [];
                 console.info("TextPickerDialog:onWillDisappear()");
               }
             });
