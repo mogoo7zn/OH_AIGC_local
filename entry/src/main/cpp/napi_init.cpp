@@ -235,6 +235,18 @@ static napi_value NAPI_Global_inference_multimodal_start(napi_env env, napi_call
     return nullptr;
 }
 
+static napi_value NAPI_Global_add_message(napi_env env, napi_callback_info info) {
+    size_t argc = 2;            //the number of arguments
+    napi_value args[2];      //the list
+    napi_get_cb_info(env, info , &argc, args, nullptr, nullptr);        //get the info of args
+    
+    std::string role = GetStringArgument(env, args[0]);
+    std::string content = GetStringArgument(env, args[1]);
+    if(model!=nullptr){
+        model->add_message(role, content);
+    }
+    return nullptr;
+}
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -250,6 +262,7 @@ static napi_value Init(napi_env env, napi_value exports) {
          napi_default, nullptr},
         {"inference_multimodal_start", nullptr, NAPI_Global_inference_multimodal_start, nullptr, nullptr, nullptr,
          napi_default, nullptr},
+        {"add_message", nullptr, NAPI_Global_add_message, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

@@ -139,7 +139,6 @@ struct CustomInput {
             testNapi.load_multimodal_image(message.picurl)
             testNapi.inference_multimodal_start(message.content,
               (token:string)=>{
-                //todo
                 ctl.deleteMessage()
                 ctl.postMessage(new ChatMessage({
                   role: ChatRole.Assistant,
@@ -163,32 +162,4 @@ struct CustomInput {
   //private onSendMessage(ctl:IChatComponent, message){
 
   //}
-}
-
-/*
-  开始推理
- */
-function startInfer(prompt: string) {
-
-}
-
-/*
-  停止推理
- */
-function stopInfer() {
-
-}
-
-/*
-  结束模型使用
- */
-function dropModel() {
-
-}
-
-/*
-  选择模型
- */
-function chooseMeodel(name: string) {
-
 }

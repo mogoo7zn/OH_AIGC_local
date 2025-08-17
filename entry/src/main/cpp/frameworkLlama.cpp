@@ -136,6 +136,10 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
 }
 
+void llama_cpp::add_message(std::string role,std::string content){
+    messages.push_back({role.c_str(),strdup(content.c_str())});
+}
+
 llama_cpp_mtmd::llama_cpp_mtmd(std::string module_path , std::string mmproj_path){
     ggml_time_init();
     

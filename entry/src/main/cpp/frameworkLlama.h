@@ -34,7 +34,8 @@ class llama_cpp{
         bool check_model_load(std::string path);
         std::string test();
         void llama_cpp_inference_start(std::string prompt, std::function<void(std::string)> ref);
-        
+        void add_message(std::string role,std::string content);    
+    
         bool stop=false;
 };
 
