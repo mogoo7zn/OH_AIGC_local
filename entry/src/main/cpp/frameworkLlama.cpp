@@ -127,7 +127,7 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         ref(response.c_str());
         batch = llama_batch_get_one(&new_token_id, 1);
     }
-    
+    prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
 }
