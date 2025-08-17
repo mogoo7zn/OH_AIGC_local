@@ -2,14 +2,14 @@
 #include "hilog/log.h"
 
 #include <thread>
-#include "frameworkLlama.h"
+#include "fwMNN.hpp"
 
 #undef LOG_DOMAIN
 #undef LOG_TAG
 #define LOG_DOMAIN 0x0721  // 全局domain宏，标识业务领域
 #define LOG_TAG "TEST"   // 全局tag宏，标识模块日志tag
 
-static llama_cpp *model = nullptr;
+static MNN_cpp *model = nullptr;
 static bool waiting = false;
 
 std::string GetStringArgument(napi_env env,napi_value arg){
@@ -30,25 +30,26 @@ std::string GetStringArgument(napi_env env,napi_value arg){
     return result;
 }
 
-void load_module_thread(std::string path){
-    model = new llama_cpp(path);
+void load_module_thread(std::string path, std::string prompt){
+    model = new MNN_cpp(path, prompt);
     OH_LOG_INFO(LOG_APP,"end load module");
     waiting = false;
 }
 
 static napi_value load_module(napi_env env, napi_callback_info info)
 {
-    size_t argc = 1;            //the number of arguments
-    napi_value args[1];      //the list
+    size_t argc = 2;            //the number of arguments
+    napi_value args[2];      //the list
     napi_get_cb_info(env, info , &argc, args, nullptr, nullptr);        //get the info of args
     
     std::string path = GetStringArgument(env, args[0]);
+    std::string prompt = GetStringArgument(env, args[1]);
     if(model!=nullptr && model->check_model_load(path)){
         return nullptr;
     }
     OH_LOG_INFO(LOG_APP,"start load module");
     waiting = true;
-    std::thread thread(load_module_thread,path);
+    std::thread thread(load_module_thread,path,prompt);
     thread.detach();
     return nullptr;
 }
@@ -84,7 +85,7 @@ void inference_start_thread(napi_env env,napi_ref callback,std::string prompt){
     callTs_context *ctx = new callTs_context;
     
     OH_LOG_INFO(LOG_APP,"load model%{public}s",model->test().c_str());
-    model->llama_cpp_inference_start(prompt, [=](std::string prompt) -> void{
+    model->MNN_cpp_inference_start(prompt, [=](std::string prompt) -> void{
             ctx->env = env;
             ctx->output = prompt;                   
             napi_call_threadsafe_function(tsFn, (void*)ctx, napi_tsfn_blocking);
