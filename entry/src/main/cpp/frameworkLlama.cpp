@@ -11,7 +11,7 @@ std::string llama_cpp::test(){
     return model_name;
 }
 
-llama_cpp::llama_cpp(std::string path){
+llama_cpp::llama_cpp(std::string path,std::string prompt){
     model_name = path;
     OH_LOG_INFO(LOG_APP,"load model%{public}s",path.c_str());
     llama_model_params model_params = llama_model_default_params();
@@ -48,6 +48,8 @@ llama_cpp::llama_cpp(std::string path){
     llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.8f));
     llama_sampler_chain_add(sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
     
+    //message
+    messages.push_back({"system",prompt.c_str()});
     OH_LOG_INFO(LOG_APP,"load model success");
 }
 
