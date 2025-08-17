@@ -128,10 +128,10 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     messages.push_back({"assistant",strdup(response.c_str())});
 }
 
-llama_cpp_mtmd::llama_cpp_mtmd(std::string path){
+llama_cpp_mtmd::llama_cpp_mtmd(std::string module_path , std::string mmproj_path){
     ggml_time_init();
     
-    model_name = path + "model.gguf";
+    model_name = module_path;
     OH_LOG_INFO(LOG_APP,"load model%{public}s",model_name.c_str());
     llama_model_params model_params = llama_model_default_params();
     model_params.n_gpu_layers = 0;
@@ -162,8 +162,6 @@ llama_cpp_mtmd::llama_cpp_mtmd(std::string path){
     ctx.tmpls = common_chat_templates_init(ctx.model, "deepseek");;
     ctx.antiprompt_tokens = common_tokenize(ctx.lctx, "###", false, true);
     
-    std::string mmproj_path = path + "mmproj.gguf";
-    
     mtmd_context_params mparams = mtmd_context_params_default();
     mparams.use_gpu = 0;
     mparams.print_timings = true;
@@ -192,7 +190,11 @@ std::string llama_cpp_mtmd::test(){
 }
 
 llama_cpp_mtmd::~llama_cpp_mtmd(){
-
+    llama_sampler_free(sampler);
+    common_sampler_free(smpl);
+    llama_free(ctx.lctx);
+    llama_model_free(ctx.model);
+    delete ctx.vocab;
 }
 
 bool llama_cpp_mtmd::check_model_load(std::string path){

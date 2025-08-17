@@ -80,7 +80,7 @@ class llama_cpp_mtmd{
         
     public:
         int                 image_num = 0;
-        llama_cpp_mtmd(std::string path);
+        llama_cpp_mtmd(std::string module_path , std::string mmproj_path);
         ~llama_cpp_mtmd();
         bool check_model_load(std::string path);
         std::string test();
