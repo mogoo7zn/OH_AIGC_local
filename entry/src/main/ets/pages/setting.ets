@@ -76,6 +76,38 @@ export async function Picker_persistPermission() : Promise<string> {
   return uri;
 }
 
+async function activatePermissionExample(uris: string) : Promise<boolean> {
+  try {
+    //let uri = "file://docs/storage/Users/username/tmp.txt";
+    let uri = uris;
+    console.info("trying activate uris:" + uris);
+    let policyInfo: fileShare.PolicyInfo = {
+      uri: uri,
+      operationMode: fileShare.OperationMode.READ_MODE,
+    };
+    let policies: Array<fileShare.PolicyInfo> = [policyInfo];
+    fileShare.activatePermission(policies).then(() => {
+      console.info("activated uris:" + uri);
+      console.info("activatePermission successfully");
+    }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
+      console.error("activatePermission failed with error message: " + err.message + ", error code: " + err.code);
+      if (err.code == 13900001 && err.data) {
+        for (let i = 0; i < err.data.length; i++) {
+          console.error("error code : " + JSON.stringify(err.data[i].code));
+          console.error("error uri : " + JSON.stringify(err.data[i].uri));
+          console.error("error reason : " + JSON.stringify(err.data[i].message));
+          if (err.data[i].code == fileShare.PolicyErrorCode.PERMISSION_NOT_PERSISTED) {
+            //可以选择进行持久化后再激活。
+          }
+        }
+      }
+    });
+  } catch (error) {
+    let err: BusinessError = error as BusinessError;
+    console.error(`activatePermission failed with err, Error code: ${err.code}, message: ${err.message}`);
+  }
+  return true;
+}
 
 
 async function revokePermissionExample() {
@@ -160,7 +192,7 @@ struct setting {
                .then((uri: string)=>{
                   CONST.model_uri = uri;
                });
-            //activatePermissionExample(CONST.model_uri); // TODO : 传入参数须为持久化存储
+            activatePermissionExample(CONST.model_uri); // TODO : 传入参数须为持久化存储
             hilog.info(0, 'testTag', 'model_uri ( in setting ) :' + CONST.model_uri);
           })
 

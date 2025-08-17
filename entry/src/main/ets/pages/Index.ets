@@ -17,6 +17,7 @@ import SessionTable from '../common/database/tables/SessionTable';
 import SessionData from '../viewmodel/SessionData';
 
 const displayClass = display.getDefaultDisplaySync();
+let dataPreferences: preferences.Preferences ;
 
 @Entry
 @Component
@@ -107,11 +108,18 @@ struct CustomInput {
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
           const modeluri = this.selected_model_name
-        const multimodeluri = this.selected_model_name
+
+        const model = CONST.model_uri
+        let file = fileIo.openSync(CONST.model_uri, fileIo.OpenMode.READ_ONLY);
+
+        const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
+        const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
+
           const fileTest = "/storage/Users/currentUser/Download"+'/';
 
-          if(message.picurl == ''){
-            testNapi.load_module(fileTest);
+          if(!message.picurl){
+
+            testNapi.load_module(file.path,this.prompt);
             testNapi.inference_start(message.content,
               (token:string)=>{
                 //todo
@@ -127,7 +135,7 @@ struct CustomInput {
                 this.last_token = token;
               })
           } else {
-            testNapi.load_multimodal_module(multimodeluri,multimodeluri)
+            testNapi.load_multimodal_module(multimodeluri0,multimodeluri1)
             testNapi.load_multimodal_image(message.picurl)
             testNapi.inference_multimodal_start(message.content,
               (token:string)=>{

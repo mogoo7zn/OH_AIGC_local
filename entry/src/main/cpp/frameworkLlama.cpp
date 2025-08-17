@@ -50,6 +50,7 @@ llama_cpp::llama_cpp(std::string path,std::string prompt){
     
     //message
     messages.push_back({"system",prompt.c_str()});
+    OH_LOG_INFO(LOG_APP,"prompt:%{public}s",prompt.c_str());
     OH_LOG_INFO(LOG_APP,"load model success");
 }
 
@@ -71,7 +72,7 @@ bool llama_cpp::check_model_load(std::string path){
 }
 
 void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void(std::string)> ref){
-    OH_LOG_INFO(LOG_APP,"prompt=%{public}s",prompt.c_str());
+    OH_LOG_INFO(LOG_APP,"userinput=%{public}s",prompt.c_str());
     const char * tmpl = llama_model_chat_template(model, /* name */ nullptr);
     std::vector<char> formatted(llama_n_ctx(ctx));
     messages.push_back({"user",strdup(prompt.c_str())});
@@ -102,7 +103,8 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         int n_ctx = llama_n_ctx(ctx);
         int n_ctx_used = llama_kv_self_used_cells(ctx);
         if (n_ctx_used + batch.n_tokens > n_ctx) {
-            OH_LOG_INFO(LOG_APP,"context size exceeded");
+            
+            OH_LOG_INFO(LOG_APP,"used %{public}d, batch %{public}d, context size exceeded",n_ctx_used,batch.n_tokens);
             break;
         }
         if (llama_decode(ctx, batch)) {

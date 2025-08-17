@@ -465,7 +465,7 @@ struct Chat {
     if (clearInput) {
       this.userInput = ''
     }
-    this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
+    this.listScroller.scrollToIndex(this.messages.totalCount() - 1,true,ScrollAlign.END)
     this.isResponding = false
   }
 

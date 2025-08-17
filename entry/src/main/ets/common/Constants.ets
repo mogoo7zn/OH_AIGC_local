@@ -3,7 +3,7 @@ import { ChatHistoryTable, SessionTable, ModelPathTable } from '../viewmodel/Con
 
 export class Constants {
   static InputPropmt = 'Chat with your local AI now ...'
-  static model_uri : string = 'file://docs/storage/Users/currentUser/Download/qwen2.5-3b-instruct-q8_0.gguf'
+  static model_uri : string = 'file://docs/storage/Users/currentUser/Download/Qwen3-4B-Instruct-2507-UD-Q6_K_XL.gguf'
 
   static readonly DatabaseName: string = 'ChatHistory.db';
   static readonly DatabaseVersion: number = 1;
