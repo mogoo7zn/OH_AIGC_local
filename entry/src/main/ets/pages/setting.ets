@@ -31,7 +31,11 @@ import { fileIo } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { dataSharePredicates } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import ModelPathTable from '../common/database/tables/ModelPathTable'
+import ModelPath from '../viewmodel/ModelPath'
 
+let modelPathTable = new ModelPathTable();
+let modelPath = new ModelPath();
 
 if (!canIUse('SystemCapability.FileManagement.AppFileService.FolderAuthorization')) {
   console.error('this api is not supported on this device');
@@ -140,6 +144,11 @@ async function revokePermissionExample() {
 @Component
 struct setting {
   //@Provide('modeluri') model_uri : string = '';
+  aboutToAppear(): void {
+    modelPathTable.getRdbStore();
+  }
+
+  modelUri: string = '';
 
   build() {
     RelativeContainer(){
@@ -190,10 +199,15 @@ struct setting {
           .onClick(()=>{
              Picker_persistPermission()
                .then((uri: string)=>{
-                  CONST.model_uri = uri;
+                 this.modelUri = uri;
+                 hilog.info(0, 'testTag', 'uri ( in setting ) :' +uri);
+                 modelPath.modelFileUrl = this.modelUri;
+                 let len = this.modelUri.split('/').length;
+                 modelPath.modelName = this.modelUri.split('/')[len-1];
+                 modelPathTable.insertData(modelPath, ()=>{});
+                 activatePermissionExample(this.modelUri); // TODO : 传入参数须为持久化存储
+                 hilog.info(0, 'testTag', 'modelPath.modelname ( in setting ) :' + modelPath.modelName);
                });
-            activatePermissionExample(CONST.model_uri); // TODO : 传入参数须为持久化存储
-            hilog.info(0, 'testTag', 'model_uri ( in setting ) :' + CONST.model_uri);
           })
 
         Text('配置prompt')
@@ -231,7 +245,6 @@ struct setting {
       .offset({
         y: 25
       })
-
     }
   }
 

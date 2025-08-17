@@ -16,7 +16,8 @@ import { fileShare } from '@kit.CoreFileKit';
 import ChatHistoryData from '../viewmodel/ChatHistoryData'
 import Rdb from '../common/database/Rdb'
 import testNapi from 'libentry.so';
-
+import ModelPathTable from '../common/database/tables/ModelPathTable'
+import ModelPath from '../viewmodel/ModelPath'
 
 import {
   PhotoPickerComponent,
@@ -135,67 +136,10 @@ interface IChatComponent {
 
 class ChatController {
   chatCtrl?: IChatComponent
-  // userInput: string = '';
-  // messages: IChatDataSource = new ChatDataSource();
-  // listScroller: Scroller = new Scroller();
-  // isResponding: boolean = false;
-  // onSendMessage?: (ctrl: IChatComponent, msg: ChatMessage) => void;
-  //
-  //
-  //   postMessage(msg: ChatMessage, clearInput: boolean = true) {
-  //     let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
-  //     if (!lastMsg.content) {
-  //       this.messages.updateData(this.messages.totalCount() - 1, msg)
-  //     } else {
-  //       this.messages.pushData(msg)
-  //     }
-  //     if (clearInput) {
-  //       this.userInput = ''
-  //     }
-  //     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
-  //     this.isResponding = false
-  //   }
-  //   deleteMessage(){
-  //     this.messages.removeData(this.messages.totalCount()-1)
-  //   }
-  //   setTyping(isTyping: boolean = false) {
-  //     if (isTyping) {
-  //       this.messages.pushData(new ChatMessage({
-  //         role: ChatRole.Assistant,
-  //         content: ""
-  //       }))
-  //       this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
-  //     } else {
-  //       let lastMsg: ChatMessage = this.messages.getData(this.messages.totalCount() - 1)
-  //       if (!lastMsg.content) {
-  //         this.messages.removeData(this.messages.totalCount() - 1)
-  //       }
-  //     }
-  //     this.isResponding = isTyping
-  //   }
-  //   submitUserInput(userIputText: string) {
-  //     this.userInput = userIputText
-  //     if (this.userInput && !this.isResponding) {
-  //       if (this.onSendMessage) {
-  //         this.isResponding = true
-  //         this.onSendMessage(this, new ChatMessage({
-  //           role: ChatRole.User,
-  //           content: this.userInput
-  //         }))
-  //       }
-  //     }
-  //   }
-  //   changeMessage(msg:ChatMessage){
-  //     console.info("test:msg=%s,c=%s",msg.content,this.messages.getString(this.messages.totalCount()-1));
-  //     this.messages.updateData(this.messages.totalCount()-1 , msg)
-  //     console.info("test:msg=%s",msg.content);
-  //     this.listScroller.scrollToIndex(this.messages.totalCount() - 1)
-  //     this.userInput = ''
-  //     this.isResponding = false
-  //   }
-
 }
 
+let modelPathTable = new ModelPathTable();
+let modelPath = new ModelPath();
 
 //@Preview
 @Component
@@ -205,8 +149,11 @@ struct Chat {
   Textcontroller: TextAreaController = new TextAreaController()
 
   private selected_model_index: number | number[] = 0;
-  private models: string[] = ['qwen2.5-3b-instruct-q8_0.gguf', 'qwen2-0_5b-instruct-q4_0.gguf', 'qwen2.5-7b-instruct-q3_k_m.gguf', 'DeepSeek-R1-0528-Qwen3-8B-Q4_0.gguf'];
+  // private models: string[] = ['qwen2.5-3b-instruct-q8_0.gguf', 'qwen2-0_5b-instruct-q4_0.gguf', 'qwen2.5-7b-instruct-q3_k_m.gguf', 'DeepSeek-R1-0528-Qwen3-8B-Q4_0.gguf'];
+  private models: string[] = []
+  private models_uri: string[] = []
   @Prop selected_model_name : string = '';
+  @Prop selected_model_uri : string = '';
   @State hasSelect : boolean = false;
 
   private file_types: string[] = ['图片', '音频'];
@@ -516,6 +463,13 @@ struct Chat {
     if (this.welcomeMessage) {
       this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
     }
+    modelPathTable.query(-1,'',(models: ModelPath[])=>{
+      for(let i=0;i<models.length;i++){
+        this.models.push(models[i].modelName)
+        this.models_uri.push(models[i].modelFileUrl)
+        hilog.info(0,"test",'models:%{public}s',this.models_uri[i])
+      }
+    }, true)
 
     // // 设置picker宫格页数据类型
     // this.pickerOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE // 图片和照片都显示。
@@ -601,6 +555,7 @@ struct Chat {
               console.info('delay 1s');
             }, 1000);
             this.getUIContext().getFocusController().requestFocus('TextArea')
+            //todo
 
             // this.getUIContext().getRouter().replaceUrl({
             //   url: 'pages/Index' // 目标url
@@ -888,6 +843,13 @@ struct Chat {
           .width('30')
           .margin(5)
           .onClick(() => {
+            modelPathTable.query(-1,'',(models: ModelPath[])=>{
+              for(let i=0;i<models.length;i++){
+                this.models.push(models[i].modelName)
+                this.models_uri.push(models[i].modelFileUrl)
+                hilog.info(0,"test",'models:%{public}s',this.models_uri[i])
+              }
+            }, true)
             this.getUIContext().showTextPickerDialog({
               range: this.models,
               selected: this.selected_model_index,
@@ -902,6 +864,10 @@ struct Chat {
                 console.log(this.selected_model_index + '');
                 // 点击确定后，被选到的文本数据展示到页面
                 this.selected_model_name = value.value as string;
+                // modelPathTable.query(this.selected_model_index as number,this.selected_model_name,(models: ModelPath[])=>{
+                //   this.selected_model_uri = models[this.selected_model_index as number].modelFileUrl;
+                // })
+                this.selected_model_uri = this.models_uri[this.selected_model_index as number];
                 this.hasSelect = true;
                 console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
                 // let context = this.getUIContext().getHostContext() as common.UIAbilityContext; // 请确保this.getUIContext().getHostContext()返回结果为UIAbilityContext

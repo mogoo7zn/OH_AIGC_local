@@ -30,6 +30,7 @@ struct CustomInput {
   @State userInput: string = ''
   @State needBackButton: boolean = false
   @State selected_model_name : string = ''
+  @State selected_model_uri : string = ''
   prompt : string = ''
   last_token = '';
   //@Consume('modeluri') model_uri : string
@@ -82,6 +83,7 @@ struct CustomInput {
               useMarkdown: true,
               onSendMessage: this.sendMessage,
               selected_model_name: this.selected_model_name,
+              selected_model_uri: this.selected_model_uri
             })
         }
         .height('100%')
@@ -112,10 +114,8 @@ struct CustomInput {
     this.prompt = dataPreferences.getSync('prompt', 'default') as string
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-          const modeluri = this.selected_model_name
-
-        const model = CONST.model_uri
-        let file = fileIo.openSync(CONST.model_uri, fileIo.OpenMode.READ_ONLY);
+        const modeluri = this.selected_model_uri
+        let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
 
         const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
         const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
@@ -130,6 +130,7 @@ struct CustomInput {
                 //todo
                 if(token == '炸薯丸出品'){
                   // todo ：存入数据库
+
 
                   // 分析意图
                   analyzeIntension(this.last_token,this.getUIContext().getHostContext() as common.UIAbilityContext)
@@ -161,7 +162,13 @@ struct CustomInput {
       }
   }
 
+  private async new_session(path:string,prompt:string){
 
+  }
+
+  private async save_session(input:string,output:string){
+
+  }
 
   // aboutToAppear() {
   //   const params = router.getParams(); // 获取传递过来的参数对象
@@ -299,32 +306,4 @@ function parseJsonFromEnd(input: string): AppConfig {
     console.error("JSON 解析失败:", error);
     return nolink;
   }
-}
-
-/*
-  开始推理
- */
-function startInfer(prompt: string) {
-
-}
-
-/*
-  停止推理
- */
-function stopInfer() {
-
-}
-
-/*
-  结束模型使用
- */
-function dropModel() {
-
-}
-
-/*
-  选择模型
- */
-function chooseMeodel(name: string) {
-
 }
