@@ -25,9 +25,9 @@ llama_cpp::llama_cpp(std::string path,std::string prompt){
     //ctx
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.n_ctx = n_ctx_num;
-    ctx_params.n_batch = 256;
+    ctx_params.n_batch = 512;
     ctx_params.no_perf = false;
-    ctx_params.n_threads = 8;   //设置推理启用线程数
+    ctx_params.n_threads = 4;   //设置推理启用线程数
     ctx = llama_init_from_model(model, ctx_params);
     if (ctx == nullptr) {
         OH_LOG_ERROR(LOG_APP,"initial context error!");
@@ -51,6 +51,32 @@ llama_cpp::llama_cpp(std::string path,std::string prompt){
     //message
     messages.push_back({"system",strdup(prompt.c_str())});
     OH_LOG_INFO(LOG_APP,"prompt:%{public}s",prompt.c_str());
+    
+    const char * tmpl = llama_model_chat_template(model, /* name */ nullptr);
+    std::vector<char> formatted(llama_n_ctx(ctx));
+    int new_len = llama_chat_apply_template(tmpl, messages.data(),messages.size(),false,formatted.data(),formatted.size());
+    if (new_len > (int)formatted.size()){
+        formatted.resize(new_len);
+        new_len = llama_chat_apply_template(tmpl, messages.data(),messages.size(),false,formatted.data(),formatted.size());
+    }
+    if (new_len<0){
+        OH_LOG_ERROR(LOG_APP,"new_len error!");
+        exit(0);
+    }
+    
+    std::string new_prompt(formatted.begin() , formatted.begin() + new_len);
+    OH_LOG_INFO(LOG_APP,"new_prompt=%{public}s ,peev_len=%{public}d",new_prompt.c_str(),prev_len);
+
+    const bool is_first = true;
+    const int n_prompt_tokens = -llama_tokenize(vocab, new_prompt.c_str(), new_prompt.size(), NULL, 0, is_first, true);
+    std::vector<llama_token> prompt_tokens(n_prompt_tokens);
+    if (llama_tokenize(vocab, new_prompt.c_str(), new_prompt.size(), prompt_tokens.data(), prompt_tokens.size(), is_first, true) < 0) {
+        OH_LOG_ERROR(LOG_APP,"failed to tokenize the prompt");
+        exit(0);
+    }
+    llama_batch batch = llama_batch_get_one(prompt_tokens.data(), prompt_tokens.size());
+    llama_decode(ctx, batch);
+    prev_len = new_len;
     OH_LOG_INFO(LOG_APP,"load model success");
 }
 
@@ -91,7 +117,7 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     OH_LOG_INFO(LOG_APP,"new_prompt=%{public}s ,peev_len=%{public}d",new_prompt.c_str(),prev_len);
     //start forward
     std::string response;
-    const bool is_first = llama_kv_self_used_cells(ctx) == 0;
+    const bool is_first = false;
     const int n_prompt_tokens = -llama_tokenize(vocab, new_prompt.c_str(), new_prompt.size(), NULL, 0, is_first, true);
     std::vector<llama_token> prompt_tokens(n_prompt_tokens);
     if (llama_tokenize(vocab, new_prompt.c_str(), new_prompt.size(), prompt_tokens.data(), prompt_tokens.size(), is_first, true) < 0) {
@@ -100,7 +126,6 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
     }
     llama_batch batch = llama_batch_get_one(prompt_tokens.data(), prompt_tokens.size());
     llama_token new_token_id;
-    
     while(true){
         int n_ctx = llama_n_ctx(ctx);
         int n_ctx_used = llama_kv_self_used_cells(ctx);
@@ -130,7 +155,6 @@ void llama_cpp::llama_cpp_inference_start(std::string prompt, std::function<void
         ref(response.c_str());
         batch = llama_batch_get_one(&new_token_id, 1);
     }
-    prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);
     //change message
     messages.push_back({"assistant",strdup(response.c_str())});
     prev_len = llama_chat_apply_template(tmpl, messages.data(), messages.size(), false, nullptr, 0);

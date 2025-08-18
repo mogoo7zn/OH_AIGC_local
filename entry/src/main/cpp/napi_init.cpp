@@ -44,6 +44,7 @@ static napi_value load_module(napi_env env, napi_callback_info info){
     
     std::string path = GetStringArgument(env, args[0]);
     std::string prompt = GetStringArgument(env, args[1]);
+    if(waiting) return nullptr;
     if(model!=nullptr && model->check_model_load(path)){
         return nullptr;
     }
@@ -55,13 +56,14 @@ static napi_value load_module(napi_env env, napi_callback_info info){
 }
 
 static napi_value unload_module(napi_env env, napi_callback_info info) {
+    OH_LOG_INFO(LOG_APP,"unload model");
     if (model!=nullptr){
         model->stop = true;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         delete model;
         model = nullptr;
     }
-    OH_LOG_INFO(LOG_APP,"unload model");
+    OH_LOG_INFO(LOG_APP,"unload model success");
     return nullptr;
 }
 

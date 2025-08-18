@@ -43,6 +43,7 @@ import { fileIo } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { dataSharePredicates } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import { preferences } from '@kit.ArkData';
 
 
 // class MediaDataHandler implements photoAccessHelper.MediaAssetDataHandler<ArrayBuffer> {
@@ -84,11 +85,44 @@ import { common } from '@kit.AbilityKit';
 // }
 
 
-
+let dataPreferences: preferences.Preferences ;
 
 let a = new ChatHistoryData()
 
-
+async function activatePermission(uris: string[]) : Promise<boolean> {
+  try {
+    //let uri = "file://docs/storage/Users/username/tmp.txt";
+    let uri = uris;
+    console.info("trying activate uris:" + uris);
+    for(let i=0;i<uris.length;i++){
+      let policyInfo: fileShare.PolicyInfo = {
+        uri: uris[i],
+        operationMode: fileShare.OperationMode.READ_MODE,
+      };
+      let policies: Array<fileShare.PolicyInfo> = [policyInfo];
+      fileShare.activatePermission(policies).then(() => {
+        console.info("activated uris:" + uri);
+        console.info("activatePermission successfully");
+      }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
+        console.error("activatePermission failed with error message: " + err.message + ", error code: " + err.code);
+        if (err.code == 13900001 && err.data) {
+          for (let i = 0; i < err.data.length; i++) {
+            console.error("error code : " + JSON.stringify(err.data[i].code));
+            console.error("error uri : " + JSON.stringify(err.data[i].uri));
+            console.error("error reason : " + JSON.stringify(err.data[i].message));
+            if (err.data[i].code == fileShare.PolicyErrorCode.PERMISSION_NOT_PERSISTED) {
+              //可以选择进行持久化后再激活。
+            }
+          }
+        }
+      });
+    }
+  } catch (error) {
+    let err: BusinessError = error as BusinessError;
+    console.error(`activatePermission failed with err, Error code: ${err.code}, message: ${err.message}`);
+  }
+  return true;
+}
 
 
 //设置各级标题字号
@@ -147,6 +181,7 @@ struct Chat {
 
   controller = new ChatController()
   Textcontroller: TextAreaController = new TextAreaController()
+  prompt: string = ''
 
   private selected_model_index: number | number[] = 0;
   // private models: string[] = ['qwen2.5-3b-instruct-q8_0.gguf', 'qwen2-0_5b-instruct-q4_0.gguf', 'qwen2.5-7b-instruct-q3_k_m.gguf', 'DeepSeek-R1-0528-Qwen3-8B-Q4_0.gguf'];
@@ -463,6 +498,9 @@ struct Chat {
     if (this.welcomeMessage) {
       this.setDefaultMessage(ChatRole.Assistant, this.welcomeMessage)
     }
+    let context = this.getUIContext().getHostContext() as Context
+    let options: preferences.Options = { name: 'myStore' };
+    dataPreferences = preferences.getPreferencesSync(context, options);
 
     // // 设置picker宫格页数据类型
     // this.pickerOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE // 图片和照片都显示。
@@ -836,63 +874,89 @@ struct Chat {
           .width('30')
           .margin(5)
           .onClick(() => {
-            modelPathTable.query(-1,'',(models: ModelPath[])=>{
-              for(let i=0;i<models.length;i++){
-                this.models.push(models[i].modelName)
-                this.models_uri.push(models[i].modelFileUrl)
-                hilog.info(0,"test",'models:%{public}s',this.models_uri[i])
-              }
-            }, true)
-            this.getUIContext().showTextPickerDialog({
-              range: this.models,
-              selected: this.selected_model_index,
-              value: this.selected_model_name,
-              defaultPickerItemHeight: 40,
-              alignment: DialogAlignment.Center,
-              offset: { dx: 0, dy: 0 },
-              canLoop: false,
-              onAccept: (value: TextPickerResult) => {
-                // 设置select为按下确定按钮时候的选中项index，这样当弹窗再次弹出时显示选中的是上一次确定的选项
-                this.selected_model_index = value.index;
-                console.log(this.selected_model_index + '');
-                // 点击确定后，被选到的文本数据展示到页面
-                this.selected_model_name = value.value as string;
-                // modelPathTable.query(this.selected_model_index as number,this.selected_model_name,(models: ModelPath[])=>{
-                //   this.selected_model_uri = models[this.selected_model_index as number].modelFileUrl;
-                // })
-                this.selected_model_uri = this.models_uri[this.selected_model_index as number];
-                this.hasSelect = true;
-                console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
+            this.prompt = dataPreferences.getSync('prompt', 'default') as string
 
-                const modeluri = this.selected_model_uri
-                let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
-                testNapi.load_module(file.path,CONST.prompt);
-              },
-              onCancel: () => {
-                this.hasSelect = false;
-                console.info("TextPickerDialog:onCancel()");
-              },
-              onChange: (value: TextPickerResult) => {
-                console.info("TextPickerDialog:onChange()" + JSON.stringify(value));
-              },
-              onScrollStop: (value: TextPickerResult) => {
-                console.info("TextPickerDialog:onScrollStop()" + JSON.stringify(value));
-              },
-              onDidAppear: () => {
-                console.info("TextPickerDialog:onDidAppear()");
-              },
-              onDidDisappear: () => {
-                console.info("TextPickerDialog:onDidDisappear()");
-              },
-              onWillAppear: () => {
-                // todo : 从数据库更新this.momdels
-                console.info("TextPickerDialog:onWillAppear()");
-              },
-              onWillDisappear: () => {
-                this.models = [];
-                console.info("TextPickerDialog:onWillDisappear()");
+            this.models = [];
+            this.models_uri = [];
+
+            const queryModels = () => {
+              return new Promise<void> ((resolve) => {
+                modelPathTable.query(-1, '', (models: ModelPath[]) => {
+                  for (let i = 0; i < models.length; i++) {
+                    this.models.push(models[i].modelName);
+                    this.models_uri.push(models[i].modelFileUrl);
+                    hilog.info(0, "test", 'models:%{public}s', this.models_uri[i]);
+                  }
+                  resolve();
+                }, true);
+              });
+            };
+
+            queryModels().then(() => {
+              activatePermission(this.models_uri)
+
+              if (this.models.length > 0) {
+                this.getUIContext().showTextPickerDialog({
+                  range: this.models,
+                  selected: this.selected_model_index,
+                  value: this.selected_model_name,
+                  defaultPickerItemHeight: 40,
+                  alignment: DialogAlignment.Center,
+                  offset: { dx: 0, dy: 0 },
+                  canLoop: false,
+                  onAccept: (value: TextPickerResult) => {
+                    // 设置select为按下确定按钮时候的选中项index，这样当弹窗再次弹出时显示选中的是上一次确定的选项
+                    this.selected_model_index = value.index;
+                    console.log(this.selected_model_index + '');
+                    // 点击确定后，被选到的文本数据展示到页面
+                    this.selected_model_name = value.value as string;
+                    // modelPathTable.query(this.selected_model_index as number,this.selected_model_name,(models: ModelPath[])=>{
+                    //   this.selected_model_uri = models[this.selected_model_index as number].modelFileUrl;
+                    // })
+                    this.selected_model_uri = this.models_uri[this.selected_model_index as number];
+                    this.hasSelect = true;
+                    console.info("TextPickerDialog:onAccept()" + JSON.stringify(value));
+
+                    const modeluri = this.selected_model_uri
+                    let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
+                    testNapi.load_module(file.path,this.prompt);
+                  },
+                  onCancel: () => {
+                    this.hasSelect = false;
+                    console.info("TextPickerDialog:onCancel()");
+                  },
+                  onChange: (value: TextPickerResult) => {
+                    console.info("TextPickerDialog:onChange()" + JSON.stringify(value));
+                  },
+                  onScrollStop: (value: TextPickerResult) => {
+                    console.info("TextPickerDialog:onScrollStop()" + JSON.stringify(value));
+                  },
+                  onDidAppear: () => {
+                    console.info("TextPickerDialog:onDidAppear()");
+                  },
+                  onDidDisappear: () => {
+                    console.info("TextPickerDialog:onDidDisappear()");
+                  },
+                  onWillAppear: () => {
+                    // todo : 从数据库更新this.momdels
+                    console.info("TextPickerDialog:onWillAppear()");
+                  },
+                  onWillDisappear: () => {
+                    this.models = [];
+                    console.info("TextPickerDialog:onWillDisappear()");
+                  }
+                });
+              } else {
+                this.getUIContext().showAlertDialog({
+                  title: '提示',
+                  message: '未寻找到可用模型，请先在设置中添加模型'
+                })
               }
-            });
+
+
+            })
+
+
           })
           // .onClick(() => {
           //   ActionSheet.show({

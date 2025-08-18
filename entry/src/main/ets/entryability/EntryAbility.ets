@@ -8,34 +8,39 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { fileShare  } from '@kit.CoreFileKit';
 import { Constants as CONST} from '../common/Constants'
 import ChatHistoryTable from '../common/database/tables/ChatHistoryTable'
+import ModelPathTable from '../common/database/tables/ModelPathTable'
+import ModelPath from '../viewmodel/ModelPath'
 
 
-async function activatePermissionExample(uris: string) : Promise<boolean> {
+
+async function activatePermission(uris: string[]) : Promise<boolean> {
   try {
     //let uri = "file://docs/storage/Users/username/tmp.txt";
     let uri = uris;
     console.info("trying activate uris:" + uris);
-    let policyInfo: fileShare.PolicyInfo = {
-      uri: uri,
-      operationMode: fileShare.OperationMode.READ_MODE,
-    };
-    let policies: Array<fileShare.PolicyInfo> = [policyInfo];
-    fileShare.activatePermission(policies).then(() => {
-      console.info("activated uris:" + uri);
-      console.info("activatePermission successfully");
-    }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
-      console.error("activatePermission failed with error message: " + err.message + ", error code: " + err.code);
-      if (err.code == 13900001 && err.data) {
-        for (let i = 0; i < err.data.length; i++) {
-          console.error("error code : " + JSON.stringify(err.data[i].code));
-          console.error("error uri : " + JSON.stringify(err.data[i].uri));
-          console.error("error reason : " + JSON.stringify(err.data[i].message));
-          if (err.data[i].code == fileShare.PolicyErrorCode.PERMISSION_NOT_PERSISTED) {
-            //可以选择进行持久化后再激活。
+    for(let i=0;i<uris.length;i++){
+      let policyInfo: fileShare.PolicyInfo = {
+        uri: uris[i],
+        operationMode: fileShare.OperationMode.READ_MODE,
+      };
+      let policies: Array<fileShare.PolicyInfo> = [policyInfo];
+      fileShare.activatePermission(policies).then(() => {
+        console.info("activated uris:" + uri);
+        console.info("activatePermission successfully");
+      }).catch((err: BusinessError<Array<fileShare.PolicyErrorResult>>) => {
+        console.error("activatePermission failed with error message: " + err.message + ", error code: " + err.code);
+        if (err.code == 13900001 && err.data) {
+          for (let i = 0; i < err.data.length; i++) {
+            console.error("error code : " + JSON.stringify(err.data[i].code));
+            console.error("error uri : " + JSON.stringify(err.data[i].uri));
+            console.error("error reason : " + JSON.stringify(err.data[i].message));
+            if (err.data[i].code == fileShare.PolicyErrorCode.PERMISSION_NOT_PERSISTED) {
+              //可以选择进行持久化后再激活。
+            }
           }
         }
-      }
-    });
+      });
+    }
   } catch (error) {
     let err: BusinessError = error as BusinessError;
     console.error(`activatePermission failed with err, Error code: ${err.code}, message: ${err.message}`);
@@ -60,19 +65,34 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    let options: preferences.Options = { name: 'myStore' };
-    dataPreferences = preferences.getPreferencesSync(this.context, options);
-    dataPreferences.putSync('prompt', CONST.prompt);
-    dataPreferences.flush((err: BusinessError) => {
-      if (err) {
-        console.error(`Failed to flush. Code:${err.code}, message:${err.message}`);
-        return;
-      }
-      console.info('Succeeded in flushing.');
-    })
+    // let options: preferences.Options = { name: 'myStore' };
+    // dataPreferences = preferences.getPreferencesSync(this.context, options);
+    // dataPreferences.putSync('prompt', CONST.prompt);
+    // dataPreferences.flush((err: BusinessError) => {
+    //   if (err) {
+    //     console.error(`Failed to flush. Code:${err.code}, message:${err.message}`);
+    //     return;
+    //   }
+    //   console.info('Succeeded in flushing.');
+    // })
 
-    // 激活模型文件的使用权限
-    activatePermissionExample(CONST.model_uri);
+    // let model_uris : string[]
+    // const activate = () => {
+    //   return new Promise<void> (()=>{
+    //     modelPathTable.query(-1,'',(models: ModelPath[])=>{
+    //       for(let i=0;i<models.length;i++){
+    //         model_uris.push(models[i].modelFileUrl)
+    //         hilog.info(0,"test",'model_uris:%{public}s',model_uris[i])
+    //       }
+    //     }, true)
+    //   })
+    // }
+    //
+    // activate().then(()=>{
+    //   // 激活模型文件的使用权限
+    //   activatePermission(model_uris);
+    // })
+
 
     // let tokenType = relationalStore.Tokenizer.ICU_TOKENIZER;
     // let tokenTypeSupported = relationalStore.isTokenizerSupported(tokenType);

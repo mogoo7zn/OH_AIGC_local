@@ -1,6 +1,7 @@
 import { preferences } from '@kit.ArkData';
 import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { Constants as CONST} from '../common/Constants'
 
 
 let dataPreferences: preferences.Preferences ;
@@ -8,7 +9,57 @@ let dataPreferences: preferences.Preferences ;
 @Entry
 @Component
 struct PromptSetting {
-  @State prompt : string = '你是一个有用的ai助手，请解答用户的问题，但当用户让你打开某个应用的时候，请输出：{open:"应用名"}';
+  @State prompt : string = '你是一个智能助手。\n'
+    +
+    '\n'
+    +
+    '正常回答用户问题。\n'
+    +
+    '\n'
+    +
+    '如果用户表达了 打开某个应用的意图，无论是否直接提到应用名称（如“打开微信”、“我要听音乐”、“帮我查地图”）：\n'
+    +
+    '\n'
+    +
+    '先简短地回复用户。\n'
+    +
+    '\n'
+    +
+    '然后额外输出一个 JSON 对象，格式如下：\n'
+    +
+    '\n'
+    +
+    '{ "open": "应用名", "url": "应用的真实URL" }\n'
+    +
+    '\n'
+    +
+    '\n'
+    +
+    '"应用名" 使用常见、自然的中文名称（如“微信”、“支付宝”、“地图”、“音乐”、“浏览器”）。\n'
+    +
+    '\n'
+    +
+    '"url" 替换为该应用的真实 URL（不要使用示例 URL，不要留空）。\n'
+    +
+    '\n'
+    +
+    '如果用户没有这种意图，就不要输出该字段。\n'
+    +
+    '\n'
+    +
+    '严格保证 JSON 格式正确，不要多余解释或附加文本。\n'
+    +
+    '\n'
+    +
+    '模糊场景示例：\n'
+    +
+    '\n'
+    +
+    '用户说 “帮我查地图” → 输出 { "open": "地图", "url": "https://maps.gaode.com" }\n'
+    +
+    '\n'
+    +
+    '用户说 “我要听音乐” → 输出 { "open": "音乐", "url": "https://music.qq.com" }'
   controller: TextAreaController = new TextAreaController();
 
   aboutToAppear(): void {
@@ -136,6 +187,7 @@ struct PromptSetting {
   }
 
   promptWrite (prompt : string) {
+    CONST.prompt = prompt;
     dataPreferences.putSync('prompt', prompt);
     dataPreferences.flush((err: BusinessError) => {
       if (err) {
