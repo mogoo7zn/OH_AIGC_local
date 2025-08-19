@@ -24,6 +24,8 @@ let dataPreferences: preferences.Preferences ;
 const TAG: string = '[UIAbilityComponentsOpenLink]';
 const DOMAIN_NUMBER: number = 0xFF00;
 
+
+
 @Entry
 @Component
 struct CustomInput {
@@ -34,12 +36,19 @@ struct CustomInput {
   prompt : string = ''
   last_token = '';
   //@Consume('modeluri') model_uri : string
+  isSession : boolean = false;            // 是否需要存入 session
+  conversationId: number = 0;
 
   @State currentSessionId: number = -1;   // 当前会话ID
   @State conversationCount: number = 0;   // 当前会话中的对话数量
 
   private chatHistoryTable: ChatHistoryTable = new ChatHistoryTable();
   private sessionTable: SessionTable = new SessionTable();
+
+  private chatHisoryData = new ChatHistoryData();
+  private sessionData :SessionData = new SessionData();
+
+  _sessionId : number = -1;
 
   // 后端暴露变量
   @State text: string = '^.^'       //  模型输出
@@ -50,8 +59,11 @@ struct CustomInput {
     dataPreferences = preferences.getPreferencesSync(context, options);
     // 初始化数据库
     this.chatHistoryTable.getRdbStore(() => {
-      console.info('SessionTable 初始化成功');
+      console.info('ChatHistoryTable 初始化成功');
     })
+    this.sessionTable.getRdbStore(() => {
+      console.info('SessionTable 初始化成功');
+    });
   }
 
   build() {
@@ -116,19 +128,36 @@ struct CustomInput {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
         const modeluri = this.selected_model_uri
         let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
-
+        // todo: 给多模态模型权限
         const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
         const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
 
           if(!message.picurl){
+            if (!this.isSession) {
+              this.sessionData.sessionName = message.content!;
+              this.sessionData.prompt = this.prompt;
+              this.sessionData.modelName = file.path;
+              this.sessionTable.insertData(this.sessionData, () => {});
 
+              this.sessionTable.query(-1, '',(sessions: SessionData[]) => {
+                this._sessionId = sessions.length - 1;
+              }, true);
+            }
+
+            this.isSession = true;
             testNapi.load_module(file.path,this.prompt);
             testNapi.inference_start(message.content,
               (token:string)=>{
                 //todo
                 if(token == '炸薯丸出品'){
                   // todo ：存入数据库
+                  this.chatHisoryData.sessionId = this._sessionId;
+                  this.chatHisoryData.conversationId =this.conversationId;
+                  this.chatHisoryData.userInput = message.content!;
+                  this.chatHisoryData.botOutput = this.last_token;
+                  this.conversationId += 1;
 
+                  this.chatHistoryTable.insertData(this.chatHisoryData, () => {});
 
                   // 分析意图
                   analyzeIntension(this.last_token,this.getUIContext().getHostContext() as common.UIAbilityContext)
