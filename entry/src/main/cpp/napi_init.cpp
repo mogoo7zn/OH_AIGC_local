@@ -212,9 +212,7 @@ void multimodal_inference_start_thread(napi_env env,napi_ref callback,std::strin
     napi_threadsafe_function tsFn;
     napi_create_threadsafe_function(env, jsCb, nullptr, workName, 0, 1, nullptr, nullptr, nullptr, callTS, &tsFn);    
     callTs_context *ctx = new callTs_context;
-    
-    OH_LOG_INFO(LOG_APP,"load model%{public}s",model->test().c_str());
-    model->llama_cpp_inference_start(prompt, [=](std::string prompt) -> void{
+    multimodal_model->llama_cpp_inference_start(prompt, [=](std::string prompt) -> void{
             ctx->env = env;
             ctx->output = prompt;                   
             napi_call_threadsafe_function(tsFn, (void*)ctx, napi_tsfn_blocking);
@@ -228,7 +226,7 @@ static napi_value NAPI_Global_inference_multimodal_start(napi_env env, napi_call
     napi_get_cb_info(env, info , &argc, args, nullptr, nullptr);        //get the info of args
     
     std::string prompt = GetStringArgument(env, args[0]);
-    if(!waiting && model == nullptr){
+    if(!waiting && multimodal_model == nullptr){
         OH_LOG_ERROR(LOG_APP,"didn't load module'");
         return nullptr;
     }

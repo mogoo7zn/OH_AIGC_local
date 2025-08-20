@@ -13,7 +13,7 @@ std::string llama_cpp::test(){
 
 llama_cpp::llama_cpp(std::string path,std::string prompt){
     model_name = path;
-    OH_LOG_INFO(LOG_APP,"load model%{public}s",path.c_str());
+    OH_LOG_INFO(LOG_APP,"load model: %{public}s",path.c_str());
     llama_model_params model_params = llama_model_default_params();
     model_params.n_gpu_layers = 0;
     //model
@@ -213,9 +213,12 @@ llama_cpp_mtmd::llama_cpp_mtmd(std::string module_path , std::string mmproj_path
 }
 
 void llama_cpp_mtmd::load_image(const std::string & fname){
+    
     mtmd::bitmap bmp(mtmd_helper_bitmap_init_from_file(fname.c_str()));
+    OH_LOG_INFO(LOG_APP,"fname:%{public}s",fname.c_str());
     if (!bmp.ptr) {
         OH_LOG_ERROR(LOG_APP,"load image error!");
+        exit(0);
     }
     ctx.bitmaps.entries.push_back(std::move(bmp));
     image_num += 1;
@@ -242,8 +245,9 @@ bool llama_cpp_mtmd::check_model_load(std::string path){
 }
 
 void llama_cpp_mtmd::llama_cpp_inference_start(std::string prompt ,std::function<void(std::string)> ref){
+    OH_LOG_INFO(LOG_APP,"abc");
     if (prompt.find("<__image__>") == std::string::npos) {
-            prompt += " <__image__>";
+            prompt += "Describe the picture, within 100 words. <__image__>";
     }
     common_chat_msg msg;
     msg.role = "user";

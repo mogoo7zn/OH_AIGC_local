@@ -15,8 +15,9 @@ import ChatHistoryTable from '../common/database/tables/ChatHistoryTable';
 import ChatHistoryData from '../viewmodel/ChatHistoryData';
 import SessionTable from '../common/database/tables/SessionTable';
 import SessionData from '../viewmodel/SessionData';
-import { common, Want, OpenLinkOptions } from '@kit.AbilityKit';
+import { common, Want, OpenLinkOptions, AbilityConstant } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { buffer } from '@kit.ArkTS';
 
 const displayClass = display.getDefaultDisplaySync();
 let dataPreferences: preferences.Preferences ;
@@ -107,6 +108,7 @@ struct CustomInput {
 
   private async sendMessage(ctl:IChatComponent,message:ChatMessage){
       //发送用户消息
+      message.content=' '
       ctl.postMessage(message)
       this.userInput = ''
       //显示回复等待动画
@@ -114,22 +116,15 @@ struct CustomInput {
     this.prompt = dataPreferences.getSync('prompt', 'default') as string
       try {
           //const fileName ="qwen2-0_5b-instruct-q4_0.gguf"
-        const modeluri = this.selected_model_uri
-        let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
-
-        const multimodeluri0 = 'file://docs/storage/Users/currentUser/Download/model.gguf'
-        const multimodeluri1 = 'file://docs/storage/Users/currentUser/Download/mmproj.gguf'
-
-          if(!message.picurl){
-
+         if(!message.picurl){
+            const modeluri = this.selected_model_uri
+            let file = fileIo.openSync(modeluri, fileIo.OpenMode.READ_ONLY);
             testNapi.load_module(file.path,this.prompt);
             testNapi.inference_start(message.content,
               (token:string)=>{
                 //todo
                 if(token == '炸薯丸出品'){
                   // todo ：存入数据库
-
-
                   // 分析意图
                   analyzeIntension(this.last_token,this.getUIContext().getHostContext() as common.UIAbilityContext)
                   return
@@ -142,8 +137,12 @@ struct CustomInput {
                 this.last_token = token;
               })
           } else {
+           const multimodeluri0 = '/storage/Users/currentUser/Download/model.gguf'
+           const multimodeluri1 = '/storage/Users/currentUser/Download/mmproj.gguf'
+            console.info('1');
+            let file_path1 = getContext().resourceDir + '/demo.jpg'
             testNapi.load_multimodal_module(multimodeluri0,multimodeluri1)
-            testNapi.load_multimodal_image(message.picurl)
+            testNapi.load_multimodal_image(file_path1)
             testNapi.inference_multimodal_start(message.content,
               (token:string)=>{
                 ctl.deleteMessage()
